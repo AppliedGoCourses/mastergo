@@ -6,19 +6,19 @@ import (
 )
 
 type Mineral struct {
-	Weight int `unit:"g"`
 	Name   string
+	Weight int `unit:"g"`
 	Opaque bool
 }
 
-func examineTypes(m Mineral) {
-	t := reflect.TypeOf(m)
+func examineTypes(intf interface{}) {
+	t := reflect.TypeOf(intf)
 
 	// Reflect upon the type of m:
 
-	fmt.Println("Type of m:", t)
-	fmt.Println("Kind of m:", t.Kind())
-	fmt.Println("Is m a struct?", t.Kind() == reflect.Struct)
+	fmt.Println("Type of intf:", t)
+	fmt.Println("Kind of intf:", t.Kind())
+	fmt.Println("Is intf a struct?", t.Kind() == reflect.Struct)
 
 	// Depending on the actual type, reflect.Type provides
 	// methods for inspecting that type further.
@@ -41,12 +41,12 @@ func examineTypes(m Mineral) {
 	fmt.Println()
 }
 
-func examineValues(m Mineral) {
-	v := reflect.ValueOf(m)
+func examineValues(intf interface{}) {
+	v := reflect.ValueOf(intf)
 
-	fmt.Println("Value of m:", v)
-	fmt.Println("Type of m:", v.Type())
-	fmt.Println("Kind of m:", v.Kind())
+	fmt.Println("Value of intf:", v)
+	fmt.Println("Type of intf:", v.Type())
+	fmt.Println("Kind of intf:", v.Kind())
 
 	field := v.FieldByName("Weight")
 	fmt.Println("Value of field 'Weight':", field)
@@ -56,29 +56,33 @@ func examineValues(m Mineral) {
 	// b) be exported.
 	// Addressable means that changing the value would change the
 	// original value. The field "Weight" is not settable:
-	fmt.Println("Can we set the field 'Weight'?", field.CanSet())
+	fmt.Println("Is intf addressable?", v.CanAddr())
+	fmt.Println("Can we modify intf?", v.CanSet())
+	fmt.Println("Can we modify the field 'Weight'?", field.CanSet())
 
 	// This is because we created a copy of the original value when
-	// calling reflect.ValueOf(m).
+	// calling reflect.ValueOf(intf).
 	// Let's get the reflect value by reference instead:
-	v = reflect.ValueOf(&m)
+	v = reflect.ValueOf(&intf)
 
-	// v is now of type *Mineral:
-	fmt.Println("Type of &m:", v.Type())
+	// v is now of type *interface{}:
+	fmt.Println("Type of &intf:", v.Type())
 
-	// We cannot get the field from the pointer, and (*v) does
-	// not work either, as it triggers an error:
+	// We cannot get the field from the pointer (through v.FieldByName(...),
+	// and (*v).FieldByName() does not work either, as it triggers an error:
 	// "invalid indirect of v (type reflect.Value)"
 	//
-	// Instead, method Elem() does the pointer indirection:
+	// Method Elem() does the required pointer indirection:
 	elem := v.Elem()
 	fmt.Println("Type of v.Elem():", elem.Type())
+	fmt.Println("Is v.Elem() addressable?", elem.CanAddr())
+	fmt.Println("Can we modify v.Elem()?", elem.CanSet())
 
 	// Now we can fetch the field and change its value:
 	field = elem.FieldByName("Weight")
-	fmt.Println("Can we set the field 'Weight' now?", field.CanSet())
+	fmt.Println("Can we modify the field 'Weight' now?", field.CanSet())
 	field.SetInt(4)
-	fmt.Printf("Changed m.Weight to %v\n", m.Weight)
+	fmt.Printf("Changed intf.Weight to %v\n", intf.(Mineral).Weight)
 }
 
 func main() {
