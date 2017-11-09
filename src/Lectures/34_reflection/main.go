@@ -21,18 +21,16 @@ func examineType(t reflect.Type) {
 	fmt.Println("Type of t:", t)
 	fmt.Println("Kind of t:", t.Kind())
 
-	fmt.Println("Is t a struct?", t.Kind() == reflect.Struct)
-
-	//
+	// If we pass a pointer, we need to do pointer indirection
+	// before moving on.
 	isPtr := t.Kind() == reflect.Ptr
 	fmt.Println("Is t a pointer?", isPtr)
 
 	if isPtr {
 		fmt.Println("Changing t to t.Elem()")
 		t = t.Elem()
-		fmt.Println("Is t now a struct?", t.Kind() == reflect.Struct)
-
 	}
+	fmt.Println("Is t a struct?", t.Kind() == reflect.Struct)
 
 	// Depending on the actual type, reflect.Type provides
 	// methods for inspecting that type further.
@@ -108,7 +106,7 @@ func modifyValue(v reflect.Value, weight int) {
 	field.SetInt(int64(weight))
 }
 
-func examineAndModify(iface interface{}, weight int) {
+func examineAndModifyInterface(iface interface{}, weight int) {
 	examineType(reflect.TypeOf(iface))
 	examineValue(reflect.ValueOf(iface))
 	modifyValue(reflect.ValueOf(iface), weight)
@@ -132,7 +130,7 @@ func main() {
 	fmt.Println("value of m after first modifyValue():", m)
 
 	fmt.Println("\n\n***** Inspecting an interface *****")
-	examineAndModify(&m, 5)
+	examineAndModifyInterface(&m, 5)
 
 	fmt.Println("value of m after second modifyValue():", m)
 }
