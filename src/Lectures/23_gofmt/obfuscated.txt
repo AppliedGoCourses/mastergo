@@ -1,0 +1,70 @@
+                          package main//   MMMMMMMMMM
+                     import                          "fmt"
+                /*MM*/                                  func P(p string){
+     //NMMD=   $                              MMMMMMMMM      //=      ZM
+   /*       */    fmt.Println(p);           //         77    M         MM
+  }         /*   M              D          7             8     MD        MI
+ M         M$   M                M        7               8     MMMMM    =M
+=M     NMMM~   M                  M      M                 M     MMMM     M
+7M     MMM~        I7              O    + MMMMM<            \     MM     $N
+ M     ~M$     D MMMMMM           */    func main()          {      //   $N
+ P     (      "I <3 Go"            +    "pher");}           /*      IM  MM
+  $M   D       7 MMMM ,~           M     8MMMMMM             8        MMM
+    +MMM          =MM7            =       :                 =        =M
+      ~M        M                 8       ?                D          M
+      MI         7.             == =MMMMMN  M            M            DZ
+      M            D?          M  MMMMMMMMM   ~M+    =MD              ,M
+      M               =MMNMMI    MNMMMMMMM:M7                          M
+     ~M                        M              Z                        M
+     Z8                       ?                :                       M
+     D$                        ?      $Z       ,                       O
+     M?                         MDM8,  N OM$IM=                        7:
+     M=                           D    7   $                           +=
+     M=                           M    ?   M                           =+
+     M?                           M   ~8   M                           ~?
+     DZ                            8,O=~7IM                            :?
+     7D                                                                :?
+      M                                                                ~?
+      M                                                                ~?
+      M                                                                ~?
+      MI                                                               ~?
+      IM                                                               ~?
+      ,M                                                               :I
+       M                                                               :7
+       M                                                                MM=
+    DMNM                                                                8   $M
+O7     M                                                                M      M
+       M                                                                M   78 M
+I$    MM                                                                MO+   M
++~  M :M                                                                M   :
+      =M                                                                M
+      IM                                                                M
+      $D                                                                M
+      OO                                                                M
+      D$                                                                M
+      MI                                                                M,
+      M?                                                                M~
+      M+                                                                M+
+      M=                                                                M=
+      M=                                                                M~
+      M=                                                                M
+      M=                                                                M
+      M=                                                                M
+      M+                                                                M
+      MI                                                               I=
+      N$                                                               M
+      8O                                                               M
+      =M                                                              D8
+       M                                                              M
+       :O                                                            M~
+        M?                                                          MO
+         M$                                                        MN
+          MM                                                      M$
+           8M                                                    M7
+             MM                                               ,M$M
+            M,   ~O                                          M     M
+          M        M                                      ZM        ~
+         M  M      +MMD                               ?MMO   $~   I  D
+        ~  M     M     ,MMMNI                  =8MMMM?         M   Z 7
+         MM    M              =ZDMMMMMMMMMDO$=                  M   M
+           MNM?                                                   */
