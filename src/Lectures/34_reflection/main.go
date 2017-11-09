@@ -6,7 +6,7 @@ import (
 )
 
 type Mineral struct {
-	Weight int `unit:"g"`
+	Name string `json:"name"`
 }
 
 func yesno(b bool) string {
@@ -36,7 +36,7 @@ func examineType(t reflect.Type) {
 		return
 	}
 
-	field, ok := t.FieldByName("Weigh")
+	field, ok := t.FieldByName("Name")
 	if !ok {
 		fmt.Println("Field not found")
 		return
@@ -46,8 +46,8 @@ func examineType(t reflect.Type) {
 
 	tag := field.Tag
 	fmt.Println("Field tag:", tag)
-	unit := tag.Get("unit")
-	fmt.Println("Field tag 'unit' contains:", unit)
+	unit := tag.Get("json")
+	fmt.Println("Field tag 'json' contains:", unit)
 
 }
 
@@ -63,24 +63,53 @@ func examineValue(v reflect.Value) {
 	fmt.Println("Type of v:", v.Type())
 	fmt.Println("Kind of v:", v.Kind())
 
-	_, ok := v.Interface().(Mineral)
-	if ok {
-		field := v.FieldByName("Weight")
-		fmt.Println("Value of field 'Weight':", field)
+	if v.Kind() != reflect.Struct {
+		return
 	}
+
+	field := v.FieldByName("Name")
+	fmt.Println("Value of field 'Name':", field)
+}
+
+func modifyValue(v reflect.Value) {
+	fmt.Println("\n*** Modifying the value ***")
+
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+
+	if v.Kind() != reflect.Struct {
+		fmt.Println("Expected Struct, got", v.Kind())
+		return
+	}
+
+	field := v.FieldByName("Name")
+	fmt.Println("Old value of field 'Name':", field)
+	if !field.CanSet() {
+		fmt.Println("Field 'Name' is not settable.")
+		return
+	}
+
+	field.SetString("Fool's Gold")
+	fmt.Println("New value of field 'Name':", field)
 }
 
 func handleSomeInterfaceParameter(intf interface{}) {
 	examineType(reflect.TypeOf(intf))
 	examineValue(reflect.ValueOf(intf))
+	modifyValue(reflect.ValueOf(intf))
 }
 
 func main() {
-	m := Mineral{Weight: 10}
+	m := Mineral{Name: "Pyrite"}
+
+	fmt.Println("\nm:", m)
 
 	fmt.Println("\n\n***** Struct *****")
 	handleSomeInterfaceParameter(m)
 
 	fmt.Println("\n\n***** Pointer *****")
 	handleSomeInterfaceParameter(&m)
+
+	fmt.Println("\nm:", m)
 }
