@@ -9,16 +9,30 @@ type Mineral struct {
 	Name   string
 	Weight int `unit:"g"`
 	Opaque bool
+	id     int64
 }
 
-func examineTypes(intf interface{}) {
-	t := reflect.TypeOf(intf)
+func examineType(t reflect.Type) {
 
-	// Reflect upon the type of m:
+	fmt.Println("\n*** Examining the type ***")
 
-	fmt.Println("Type of intf:", t)
-	fmt.Println("Kind of intf:", t.Kind())
-	fmt.Println("Is intf a struct?", t.Kind() == reflect.Struct)
+	// Reflect upon the type of t:
+
+	fmt.Println("Type of t:", t)
+	fmt.Println("Kind of t:", t.Kind())
+
+	fmt.Println("Is t a struct?", t.Kind() == reflect.Struct)
+
+	//
+	isPtr := t.Kind() == reflect.Ptr
+	fmt.Println("Is t a pointer?", isPtr)
+
+	if isPtr {
+		fmt.Println("Changing t to t.Elem()")
+		t = t.Elem()
+		fmt.Println("Is t now a struct?", t.Kind() == reflect.Struct)
+
+	}
 
 	// Depending on the actual type, reflect.Type provides
 	// methods for inspecting that type further.
@@ -37,42 +51,49 @@ func examineTypes(intf interface{}) {
 	fmt.Println("Field tag:", tag)
 	unit := tag.Get("unit")
 	fmt.Println("Field tag 'unit' contains:", unit)
-
-	fmt.Println()
 }
 
-func examineValues(intf interface{}) {
-	v := reflect.ValueOf(intf)
+func examineValue(v reflect.Value) {
 
-	fmt.Println("Value of intf:", v)
-	fmt.Println("Type of intf:", v.Type())
-	fmt.Println("Kind of intf:", v.Kind())
+	fmt.Println("\n*** Examining the value ***")
 
-	field := v.FieldByName("Weight")
-	fmt.Println("Value of field 'Weight':", field)
+	fmt.Println("Value of v:", v)
+	fmt.Println("Type of v:", v.Type())
+	fmt.Println("Kind of v:", v.Kind())
+
+	_, ok := v.Interface().(Mineral)
+	if ok {
+		field := v.FieldByName("Weight")
+		fmt.Println("Value of field 'Weight':", field)
+	}
+}
+
+func modifyValue(v reflect.Value, weight int) {
+
+	fmt.Println("\n*** Modifying the value ***")
 
 	// To change a reflection value, the value must
 	// a) be addressable, and
 	// b) be exported.
 	// Addressable means that changing the value would change the
-	// original value. The field "Weight" is not settable:
-	fmt.Println("Is intf addressable?", v.CanAddr())
-	fmt.Println("Can we modify intf?", v.CanSet())
-	fmt.Println("Can we modify the field 'Weight'?", field.CanSet())
+	// original value.
 
-	// This is because we created a copy of the original value when
-	// calling reflect.ValueOf(intf).
-	// Let's get the reflect value by reference instead:
-	v = reflect.ValueOf(&intf)
-
-	// v is now of type *interface{}:
-	fmt.Println("Type of &intf:", v.Type())
+	fmt.Println("Is v addressable?", v.CanAddr())
+	fmt.Println("Can we modify v?", v.CanSet())
 
 	// We cannot get the field from the pointer (through v.FieldByName(...),
 	// and (*v).FieldByName() does not work either, as it triggers an error:
 	// "invalid indirect of v (type reflect.Value)"
 	//
 	// Method Elem() does the required pointer indirection:
+	field := v.Elem().FieldByName("Weight")
+	fmt.Println("Can we modify the field 'Weight'?", field.CanSet())
+
+	// We stop here if v cannot be modified.
+	if !field.CanSet() {
+		return
+	}
+
 	elem := v.Elem()
 	fmt.Println("Type of v.Elem():", elem.Type())
 	fmt.Println("Is v.Elem() addressable?", elem.CanAddr())
@@ -81,18 +102,37 @@ func examineValues(intf interface{}) {
 	// Now we can fetch the field and change its value:
 	field = elem.FieldByName("Weight")
 	fmt.Println("Can we modify the field 'Weight' now?", field.CanSet())
-	field.SetInt(4)
-	fmt.Printf("Changed intf.Weight to %v\n", intf.(Mineral).Weight)
+
+	// In main() we will see whether the following SetInt
+	// has an effect on the original value:
+	field.SetInt(int64(weight))
+}
+
+func examineAndModify(iface interface{}, weight int) {
+	examineType(reflect.TypeOf(iface))
+	examineValue(reflect.ValueOf(iface))
+	modifyValue(reflect.ValueOf(iface), weight)
 }
 
 func main() {
 
-	t := Mineral{
+	m := Mineral{
 		Weight: 3,
 		Name:   "a test structure",
 		Opaque: true,
 	}
 
-	examineTypes(t)
-	examineValues(t)
+	fmt.Println(m)
+
+	fmt.Println("\n\n***** Inspecting a struct *****")
+	examineType(reflect.TypeOf(m))
+	examineValue(reflect.ValueOf(m))
+	modifyValue(reflect.ValueOf(&m), 4)
+
+	fmt.Println("value of m after first modifyValue():", m)
+
+	fmt.Println("\n\n***** Inspecting an interface *****")
+	examineAndModify(&m, 5)
+
+	fmt.Println("value of m after second modifyValue():", m)
 }
