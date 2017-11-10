@@ -7,6 +7,7 @@ import (
 
 type Mineral struct {
 	Name string `json:"name"`
+	id   int64  // internal
 }
 
 func yesno(b bool) string {
