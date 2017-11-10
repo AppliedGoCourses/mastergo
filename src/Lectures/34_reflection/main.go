@@ -10,27 +10,20 @@ type Mineral struct {
 	id   int64  // internal
 }
 
-func yesno(b bool) string {
-	if b {
-		return "yes"
-	}
-	return "no"
-}
-
 func examineType(t reflect.Type) {
 	fmt.Println("\n*** Examining the type ***")
 
 	fmt.Println("Type of t:", t)
 	fmt.Println("Kind of t:", t.Kind())
 	isPtr := t.Kind() == reflect.Ptr
-	fmt.Println("Is t a pointer?", yesno(isPtr))
+	fmt.Println("Is t a pointer?", isPtr)
 
 	if isPtr {
 		fmt.Println("Changing t to t.Elem()")
 		t = t.Elem()
 		fmt.Println("Type of t:", t)
 		fmt.Println("Kind of t:", t.Kind())
-		fmt.Println("Is t now a struct?", yesno(t.Kind() == reflect.Struct))
+		fmt.Println("Is t now a struct?", t.Kind() == reflect.Struct)
 	}
 
 	if t.Kind() != reflect.Struct {
