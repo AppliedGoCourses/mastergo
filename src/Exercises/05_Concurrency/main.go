@@ -1,37 +1,42 @@
 package main
 
 import (
-	"database/sql"
 	"log"
-
-	_ "github.com/mattn/go-sqlite3"
 )
 
+type Row struct {
+	Name  string
+	Hfreq []int
+}
+
+type Table []Row
+
 func main() {
-	db, err := readDB()
+	table, err := read()
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	err = process(db)
+	err = process(table)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	err = writeDB(db)
+	err = write(table)
 	if err != nil {
 		log.Fatalln(err)
 	}
 }
 
-func readDB() (*sql.DB, error) {
+func read() (*Table, error) {
+
 	return nil, nil
 }
 
-func process(db *sql.DB) error {
+func process(t *Table) error {
 	return nil
 }
 
-func writeDB(db *sql.DB) error {
+func write(t *Table) error {
 	return nil
 }
