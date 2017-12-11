@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strconv"
@@ -31,7 +32,7 @@ func main() {
 
 	flag.Parse()
 
-	data, err := read()
+	data, err := readFromFile("data")
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -41,7 +42,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	err = write(stats)
+	err = writeToFile("stats", stats)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -59,26 +60,37 @@ func makeTable(r, c int) Table {
 	return t
 }
 
-func read() (Table, error) {
-	f, err := os.Open("trainingdata.csv")
+func fileName(p string, r, c int) string {
+	return fmt.Sprintf("%s%sx%s.csv", p, strconv.Itoa(r), strconv.Itoa(c))
+}
+
+// readFromFile is a file handling wrapper for read().
+// This way we can make read() testable with non-file data.
+func readFromFile(prefix string) (Table, error) {
+	name := fileName(prefix, *rows, *cols)
+	f, err := os.Open(name)
 	if err != nil {
 		// The file might simply not exist yet, so let's generate it.
-		err = generate(*rows, *cols)
+		err = generate(name, *rows, *cols)
 		if err != nil {
 			return nil, errors.Wrap(err, "") // generate() already provides a descriptive error message.
 		}
 		// Now let's try again
-		f, err = os.Open("trainingdata.csv")
+		f, err = os.Open(name)
 		if err != nil {
-			return nil, errors.Wrap(err, "Cannot read trainingsdata.csv")
+			return nil, errors.Wrapf(err, "Cannot read %s", name)
 		}
 	}
 	defer f.Close()
 
+	return read(f)
+}
+
+func read(r io.Reader) (Table, error) {
 	// A CSV reader is aware of the structure and syntax of a CSV file.
 	// NewReader expects an io.Reader, and os.File implements io.Reader,
 	// so we can simply pass in the open file.
-	cr := csv.NewReader(f)
+	cr := csv.NewReader(r)
 
 	// Pre-allocate the table structure.
 	data := makeTable(*rows, *cols)
@@ -129,14 +141,24 @@ func process(data Table) Table {
 	return stats
 }
 
-func write(t Table) error {
-	f, err := os.Create("trainingstats.csv")
+func writeToFile(prefix string, t Table) (err error) {
+	name := fileName(prefix, *rows, *cols)
+	f, err := os.Create(name)
 	if err != nil {
-		return errors.Wrap(err, "Cannot create trainingsstats.csv")
+		return errors.Wrapf(err, "Cannot create %s", name)
 	}
-	defer f.Close()
+	defer func() {
+		e := f.Close()
+		if e != nil {
+			err = e
+		}
+	}()
 
-	cw := csv.NewWriter(f)
+	return write(t, f)
+}
+
+func write(t Table, w io.Writer) error {
+	cw := csv.NewWriter(w)
 
 	// We want a header row in our output CSV file.
 	cw.Write([]string{"Name", "avg", "min", "max"})
@@ -150,16 +172,19 @@ func write(t Table) error {
 			strconv.Itoa(t[i].Hrate[1]),
 			strconv.Itoa(t[i].Hrate[2]),
 		}
-		cw.Write(row)
+		if err := cw.Write(row); err != nil {
+			return errors.Wrapf(err, "Cannot write row %d (%v)", i, row)
+		}
 	}
+	cw.Flush()
 
 	return nil
 }
 
-func generate(rows, cols int) error {
-	f, err := os.Create("trainingdata.csv")
+func generate(name string, rows, cols int) error {
+	f, err := os.Create(name)
 	if err != nil {
-		return errors.Wrap(err, "Cannot open trainingsdata.csv for writing")
+		return errors.Wrapf(err, "Cannot create %s", name)
 	}
 	defer f.Close()
 
