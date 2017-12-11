@@ -13,7 +13,7 @@ func setup(b *testing.B) {
 	*rows = size
 	*cols = size
 	once.Do(func() {
-		err := generate("benchmark", *rows, *cols)
+		err := generate(fileName("benchmark", *rows, *cols), *rows, *cols)
 		if err != nil {
 			b.Fatal(err)
 		}
