@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"sync"
 	"testing"
 )
@@ -9,73 +8,78 @@ import (
 var once = sync.Once{}
 var size = 1000
 
-func setup(b *testing.B) {
-	*rows = size
-	*cols = size
+func setup(b *testing.B) (filename string) {
+	filename = fileName("benchmark", size, size)
 	once.Do(func() {
-		err := generate(fileName("benchmark", *rows, *cols), *rows, *cols)
+		err := generateIfNotExists(filename, size, size)
 		if err != nil {
 			b.Fatal(err)
 		}
 	})
+	return filename
 }
 
-func BenchmarkMakeTable(b *testing.B) {
-	for n := 0; n < b.N; n++ {
-		makeTable(size, size)
-	}
-}
-func BenchmarkRead(b *testing.B) {
-	setup(b)
+func Benchmark_read(b *testing.B) {
+	fname := setup(b)
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
-		_, err := readFromFile("benchmark")
+		f, _, _, err := readFromFile(fname, size)
+		if err != nil {
+			b.Fatal(err)
+		}
+		f.Close()
+	}
+}
+
+func Benchmark_process(b *testing.B) {
+	fname := setup(b)
+	f, ch, _, err := readFromFile(fname, size)
+	defer f.Close()
+	b.ResetTimer()
+	if err != nil {
+		b.Fatal(err)
+	}
+	for n := 0; n < b.N; n++ {
+		_ = process(ch, size)
+	}
+}
+
+func Benchmark_write(b *testing.B) {
+	fname := setup(b)
+	f, rch, _, err := readFromFile(fname, size)
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer f.Close()
+	wch := process(rch, size)
+	sfname := fileName("benchmarkstats", size, size)
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		err := writeToFile(sfname, wch)
 		if err != nil {
 			b.Fatal(err)
 		}
 	}
 }
 
-func BenchmarkProcess(b *testing.B) {
-	setup(b)
-	t, err := readFromFile("benchmark")
-	b.ResetTimer()
-	if err != nil {
-		b.Fatal(err)
-	}
+func Benchmark_all(b *testing.B) {
+	dfname := fileName("benchmark", size, size)
 	for n := 0; n < b.N; n++ {
-		_ = process(t)
-	}
-}
-
-func BenchmarkWrite(b *testing.B) {
-	setup(b)
-	t, err := readFromFile("benchmark")
-	if err != nil {
-		b.Fatal(err)
-	}
-	res := process(t)
-	b.ResetTimer()
-	for n := 0; n < b.N; n++ {
-		writeToFile("benchmarkstats", res)
-	}
-}
-
-func BenchmarkAll(b *testing.B) {
-	for n := 0; n < b.N; n++ {
-		data, err := readFromFile("benchmark")
+		f, rch, _, err := readFromFile(dfname, size)
 		if err != nil {
-			log.Fatalln(err)
+			b.Fatal(err)
+		}
+		defer f.Close()
+
+		wch := process(rch, size)
+		if err != nil {
+			b.Fatal(err)
 		}
 
-		stats := process(data)
+		sfname := fileName("benchmarkstats", size, size)
+		err = writeToFile(sfname, wch)
 		if err != nil {
-			log.Fatalln(err)
-		}
-
-		err = writeToFile("benchmarkstats", stats)
-		if err != nil {
-			log.Fatalln(err)
+			b.Fatal(err)
 		}
 	}
 }

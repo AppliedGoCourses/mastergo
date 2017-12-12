@@ -9,6 +9,8 @@ import (
 	"os"
 	"strconv"
 
+	"golang.org/x/sync/errgroup"
+
 	gf "github.com/brianvoe/gofakeit"
 	"github.com/pkg/errors"
 )
@@ -17,8 +19,6 @@ type Row struct {
 	Name  string
 	Hrate []int
 }
-
-type Table []Row
 
 var (
 	rows = flag.Int("rows", 1000, "Number of rows")
@@ -32,32 +32,33 @@ func main() {
 
 	flag.Parse()
 
-	data, err := readFromFile("data")
+	// Generate a file name based on the # of rows and columns.
+	dfname := fileName("data", *rows, *cols)
+
+	// Generate the file if it does not exist yet.
+	generateIfNotExists(dfname, *rows, *cols)
+
+	file, rch, errch, err := readFromFile(dfname, *rows)
 	if err != nil {
 		log.Fatalln(err)
 	}
+	defer file.Close()
+	// Check the error channel:
+	go func() {
+		select {
+		case err := <-errch:
+			log.Fatalln(err)
+		}
+	}()
 
-	stats := process(data)
+	wch := process(rch, *rows)
+
+	sfname := fileName("stats", *rows, *cols)
+
+	err = writeToFile(sfname, wch)
 	if err != nil {
 		log.Fatalln(err)
 	}
-
-	err = writeToFile("stats", stats)
-	if err != nil {
-		log.Fatalln(err)
-	}
-}
-
-func makeTable(r, c int) Table {
-	// Return value "Table" does not need to be a pointer, since it represents
-	// a slice header that consists of len, cap, and a pointer to the actual
-	// data. Remember the lecture on slices!
-	t := make(Table, r, r) // set len and cap to # of rows
-	for i := 0; i < r; i++ {
-		// Pre-allocate a row
-		t[i].Hrate = make([]int, c, c) // set len and cap to # of cols
-	}
-	return t
 }
 
 func fileName(p string, r, c int) string {
@@ -66,83 +67,119 @@ func fileName(p string, r, c int) string {
 
 // readFromFile is a file handling wrapper for read().
 // This way we can make read() testable with non-file data.
-func readFromFile(prefix string) (Table, error) {
-	name := fileName(prefix, *rows, *cols)
+func readFromFile(name string, bufsize int) (*os.File, chan Row, chan error, error) {
 	f, err := os.Open(name)
 	if err != nil {
-		// The file might simply not exist yet, so let's generate it.
-		err = generate(name, *rows, *cols)
-		if err != nil {
-			return nil, errors.Wrap(err, "") // generate() already provides a descriptive error message.
-		}
-		// Now let's try again
-		f, err = os.Open(name)
-		if err != nil {
-			return nil, errors.Wrapf(err, "Cannot read %s", name)
-		}
+		return nil, nil, nil, errors.Wrapf(err, "Cannot read %s", name)
 	}
-	defer f.Close()
 
-	return read(f)
+	rch, ech := read(f, bufsize)
+	return f, rch, ech, nil
 }
 
-func read(r io.Reader) (Table, error) {
+func read(r io.Reader, bufsize int) (chan Row, chan error) {
 	// A CSV reader is aware of the structure and syntax of a CSV file.
 	// NewReader expects an io.Reader, and os.File implements io.Reader,
 	// so we can simply pass in the open file.
 	cr := csv.NewReader(r)
 
-	// Pre-allocate the table structure.
-	data := makeTable(*rows, *cols)
+	// We do not use the current line after reading its fields,
+	// so we can reuse the allocated record for performance.
+	cr.ReuseRecord = true
 
-	for i := 0; i < *rows; i++ {
-		// Read the CSV data line by line.
-		row, err := cr.Read()
-		if err != nil {
-			return nil, errors.Wrapf(err, "Cannot read row %d", i)
-		}
+	// Create a buffered channel for sending rows to process()
+	ch := make(chan Row, bufsize)
 
-		// Fill the current table row with name and heart rates.
-		data[i].Name = row[0]
-		for j := 0; j < *cols; j++ {
-			// All CSV data is of type string, but we want to store heart rates as integers.
-			hr, err := strconv.Atoi(row[j+1])
+	// Our goroutines might produce errors. To handle these,
+	// we use an errgroup.
+
+	var g errgroup.Group
+
+	g.Go(func() error {
+		defer close(ch)
+		for {
+			// Read the CSV data line by line.
+			line, err := cr.Read()
+			if err == io.EOF {
+				// We're done.
+				return nil
+			}
 			if err != nil {
-				return nil, errors.Wrapf(err, "Cannot convert string '%s' to int", row[j])
+				return errors.Wrap(err, "Cannot read row")
 			}
-			data[i].Hrate[j] = hr
+
+			// Create a new Row and fill it with CSV data.
+			cols := len(line) - 1 // do not count the name column
+			row := Row{
+				Name:  line[0],
+				Hrate: make([]int, cols, cols),
+			}
+			for j := 1; j < cols; j++ {
+				// All CSV data is of type string, but we want to store heart rates as integers.
+				hr, err := strconv.Atoi(line[j])
+				if err != nil {
+					return errors.Wrapf(err, "Cannot convert string '%s' from column %d to int", line[j], j)
+				}
+				row.Hrate[j-1] = hr
+			}
+			ch <- row
 		}
-	}
-	return data, nil
+		return nil
+	})
+
+	// Now we must wait for all goroutines to finish, in order
+	// to collect any error messages.
+	// However, we also need to return the channel immediately
+	// so that the data can flow to the processing stage.
+	// Hence we need to wait within a goroutine, and use a
+	// channel to return any error.
+	errch := make(chan error)
+	go func() {
+		err := g.Wait()
+		if err != nil {
+			errch <- err
+		}
+	}()
+	return ch, errch
 }
 
-func process(data Table) Table {
-	stats := makeTable(*rows, 3) // We store avg, min, and max
+func process(rch chan Row, bufsize int) chan Row {
 
-	for i := 0; i < *rows; i++ {
-		sum := 0   // used for calculating average heard frequency
-		min := 999 // larger than any possible human heart rate
-		max := 0
-		for j := 0; j < *cols; j++ {
-			hr := data[i].Hrate[j]
-			sum += hr
-			if hr < min {
-				min = hr
+	wch := make(chan Row, bufsize)
+
+	go func() {
+		for data, ok := <-rch; ok; data, ok = <-rch {
+			sum := 0   // used for calculating average heard frequency
+			min := 999 // larger than any possible human heart rate
+			max := 0
+			cols := len(data.Hrate)
+
+			for j := 0; j < cols; j++ {
+				hr := data.Hrate[j]
+				sum += hr
+				if hr < min {
+					min = hr
+				}
+				if hr > max {
+					max = hr
+				}
 			}
-			if hr > max {
-				max = hr
+			stats := Row{
+				Name: data.Name,
+				Hrate: []int{
+					sum / cols,
+					min,
+					max,
+				},
 			}
+			wch <- stats
 		}
-		stats[i].Name = data[i].Name
-		stats[i].Hrate[0] = sum / *cols
-		stats[i].Hrate[1] = min
-		stats[i].Hrate[2] = max
-	}
-	return stats
+		close(wch)
+	}()
+	return wch
 }
 
-func writeToFile(prefix string, t Table) (err error) {
-	name := fileName(prefix, *rows, *cols)
+func writeToFile(name string, ch chan Row) (err error) {
 	f, err := os.Create(name)
 	if err != nil {
 		return errors.Wrapf(err, "Cannot create %s", name)
@@ -154,26 +191,26 @@ func writeToFile(prefix string, t Table) (err error) {
 		}
 	}()
 
-	return write(t, f)
+	return write(ch, f)
 }
 
-func write(t Table, w io.Writer) error {
+func write(ch chan Row, w io.Writer) error {
 	cw := csv.NewWriter(w)
 
 	// We want a header row in our output CSV file.
 	cw.Write([]string{"Name", "avg", "min", "max"})
 
-	for i := 0; i < *rows; i++ {
+	for data, ok := <-ch; ok; data, ok = <-ch {
 		// Turn our stats into strings.
 		// With more than three values, a loop might be preferable.
 		row := []string{
-			t[i].Name,
-			strconv.Itoa(t[i].Hrate[0]),
-			strconv.Itoa(t[i].Hrate[1]),
-			strconv.Itoa(t[i].Hrate[2]),
+			data.Name,
+			strconv.Itoa(data.Hrate[0]),
+			strconv.Itoa(data.Hrate[1]),
+			strconv.Itoa(data.Hrate[2]),
 		}
 		if err := cw.Write(row); err != nil {
-			return errors.Wrapf(err, "Cannot write row %d (%v)", i, row)
+			return errors.Wrapf(err, "Cannot write row '%v'", row)
 		}
 	}
 	cw.Flush()
@@ -181,7 +218,17 @@ func write(t Table, w io.Writer) error {
 	return nil
 }
 
-func generate(name string, rows, cols int) error {
+func generateIfNotExists(name string, rows, cols int) error {
+	_, err := os.Stat(name)
+	if err == nil {
+		// File exists, no need for creating one.
+		return nil
+	}
+	if !os.IsNotExist(err) {
+		// Only a "not exists" error is expected here.
+		return errors.Wrap(err, "Unexpected error on os.Stat")
+	}
+
 	f, err := os.Create(name)
 	if err != nil {
 		return errors.Wrapf(err, "Cannot create %s", name)
@@ -193,7 +240,10 @@ func generate(name string, rows, cols int) error {
 		min := gf.Number(80, 100)
 		max := gf.Number(160, 180)
 		for j := 0; j < cols; j++ {
-			fmt.Fprintf(f, "\"%d\",", gf.Number(min, max))
+			fmt.Fprintf(f, "\"%d\"", gf.Number(min, max))
+			if j < cols-1 {
+				fmt.Fprintf(f, ",")
+			}
 		}
 		fmt.Fprintln(f)
 	}

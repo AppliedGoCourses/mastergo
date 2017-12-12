@@ -8,6 +8,36 @@ import (
 	"testing"
 )
 
+func Test_fileName(t *testing.T) {
+	type args struct {
+		p string
+		r int
+		c int
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "test10x20",
+			args: args{
+				p: "test",
+				r: 10,
+				c: 20,
+			},
+			want: "test10x20.csv",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := fileName(tt.args.p, tt.args.r, tt.args.c); got != tt.want {
+				t.Errorf("fileName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func verifyTableProperties(table Table, r, c int) error {
 	if len(table) != r {
 		return fmt.Errorf("makeTable(): rows = %v, want %v", len(table), r)
@@ -41,21 +71,19 @@ func Test_makeTable(t *testing.T) {
 }
 
 func Test_read(t *testing.T) {
-	*rows = 5
-	*cols = 5
-	csv := `"Bart Beatty","98","130","158","129","128",
-"Marc Murphy","156","93","131","112","118",
-"Briana Bauch","108","133","168","121","144",
-"Gerda Rosenbaum","109","166","95","159","139",
-"Guido Witting","120","123","165","107","135",`
-
+	csv := `"Bart Beatty","98","130","158","129","128"
+"Marc Murphy","156","93","131","112","118"
+"Briana Bauch","108","133","168","121","144"
+"Gerda Rosenbaum","109","166","95","159","139"
+"Guido Witting","120","123","165","107","135"`
+	rows, cols := 5, 5
 	sr := strings.NewReader(csv)
-	table, err := read(sr)
+	table, err := read(sr, rows, cols)
 	if err != nil {
 		t.Errorf("read() error = %v", err)
 		return
 	}
-	err = verifyTableProperties(table, *rows, *cols)
+	err = verifyTableProperties(table, rows, cols)
 	if err != nil {
 		t.Error(err)
 	}
@@ -91,8 +119,6 @@ func Test_process(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			*rows = tt.r
-			*cols = tt.c
 			if got := process(tt.data); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("process() = %v\nwant %v", got, tt.want)
 			}
@@ -110,7 +136,7 @@ Sunny Gerlach,170,165,174
 Jarod Wolff,136,125,145
 Verla Abshire,135,114,154
 `
-	var out bytes.Buffer
+	var out bytes.Buffer // implements io.Writer
 	table1 := []Row{
 		{Name: "Bart Beatty", Hrate: []int{128, 98, 158}},
 		{Name: "Alejandra Kunde", Hrate: []int{146, 127, 161}},

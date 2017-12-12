@@ -9,36 +9,36 @@ import (
 var once = sync.Once{}
 var size = 1000
 
-func setup(b *testing.B) {
-	*rows = size
-	*cols = size
+func setup(b *testing.B) (filename string) {
+	filename = fileName("benchmark", size, size)
 	once.Do(func() {
-		err := generate(fileName("benchmark", *rows, *cols), *rows, *cols)
+		err := generateIfNotExists(filename, size, size)
 		if err != nil {
 			b.Fatal(err)
 		}
 	})
+	return filename
 }
 
-func BenchmarkMakeTable(b *testing.B) {
+func Benchmark_makeTable(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		makeTable(size, size)
 	}
 }
-func BenchmarkRead(b *testing.B) {
-	setup(b)
+func Benchmark_read(b *testing.B) {
+	fname := setup(b)
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
-		_, err := readFromFile("benchmark")
+		_, err := readFromFile(fname, size, size)
 		if err != nil {
 			b.Fatal(err)
 		}
 	}
 }
 
-func BenchmarkProcess(b *testing.B) {
-	setup(b)
-	t, err := readFromFile("benchmark")
+func Benchmark_process(b *testing.B) {
+	fname := setup(b)
+	t, err := readFromFile(fname, size, size)
 	b.ResetTimer()
 	if err != nil {
 		b.Fatal(err)
@@ -48,22 +48,24 @@ func BenchmarkProcess(b *testing.B) {
 	}
 }
 
-func BenchmarkWrite(b *testing.B) {
-	setup(b)
-	t, err := readFromFile("benchmark")
+func Benchmark_write(b *testing.B) {
+	fname := setup(b)
+	t, err := readFromFile(fname, size, size)
 	if err != nil {
 		b.Fatal(err)
 	}
 	res := process(t)
+	sfname := fileName("benchmarkstats", size, size)
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
-		writeToFile("benchmarkstats", res)
+		writeToFile(sfname, res)
 	}
 }
 
-func BenchmarkAll(b *testing.B) {
+func Benchmark_all(b *testing.B) {
+	dfname := fileName("benchmark", size, size)
 	for n := 0; n < b.N; n++ {
-		data, err := readFromFile("benchmark")
+		data, err := readFromFile(dfname, size, size)
 		if err != nil {
 			log.Fatalln(err)
 		}
@@ -73,7 +75,8 @@ func BenchmarkAll(b *testing.B) {
 			log.Fatalln(err)
 		}
 
-		err = writeToFile("benchmarkstats", stats)
+		sfname := fileName("benchmarkstats", size, size)
+		err = writeToFile(sfname, stats)
 		if err != nil {
 			log.Fatalln(err)
 		}

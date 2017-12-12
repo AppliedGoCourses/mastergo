@@ -32,17 +32,20 @@ func main() {
 
 	flag.Parse()
 
-	data, err := readFromFile("data")
+	dfname := fileName("data", *rows, *cols)
+
+	generateIfNotExists(dfname, *rows, *cols)
+
+	data, err := readFromFile(dfname, *rows, *cols)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	stats := process(data)
-	if err != nil {
-		log.Fatalln(err)
-	}
 
-	err = writeToFile("stats", stats)
+	sfname := fileName("stats", *rows, *cols)
+
+	err = writeToFile(sfname, stats)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -66,49 +69,43 @@ func fileName(p string, r, c int) string {
 
 // readFromFile is a file handling wrapper for read().
 // This way we can make read() testable with non-file data.
-func readFromFile(prefix string) (Table, error) {
-	name := fileName(prefix, *rows, *cols)
+func readFromFile(name string, rows, cols int) (Table, error) {
 	f, err := os.Open(name)
 	if err != nil {
-		// The file might simply not exist yet, so let's generate it.
-		err = generate(name, *rows, *cols)
-		if err != nil {
-			return nil, errors.Wrap(err, "") // generate() already provides a descriptive error message.
-		}
-		// Now let's try again
-		f, err = os.Open(name)
-		if err != nil {
-			return nil, errors.Wrapf(err, "Cannot read %s", name)
-		}
+		return nil, errors.Wrapf(err, "Cannot read %s", name)
 	}
 	defer f.Close()
 
-	return read(f)
+	return read(f, rows, cols)
 }
 
-func read(r io.Reader) (Table, error) {
+func read(r io.Reader, rows, cols int) (Table, error) {
 	// A CSV reader is aware of the structure and syntax of a CSV file.
 	// NewReader expects an io.Reader, and os.File implements io.Reader,
 	// so we can simply pass in the open file.
 	cr := csv.NewReader(r)
 
-	// Pre-allocate the table structure.
-	data := makeTable(*rows, *cols)
+	// We do not use the current line after reading its fields,
+	// so we can reuse the allocated record for performance.
+	cr.ReuseRecord = true
 
-	for i := 0; i < *rows; i++ {
+	// Pre-allocate the table structure.
+	data := makeTable(rows, cols)
+
+	for i := 0; i < rows; i++ {
 		// Read the CSV data line by line.
-		row, err := cr.Read()
+		line, err := cr.Read()
 		if err != nil {
 			return nil, errors.Wrapf(err, "Cannot read row %d", i)
 		}
 
 		// Fill the current table row with name and heart rates.
-		data[i].Name = row[0]
-		for j := 0; j < *cols; j++ {
+		data[i].Name = line[0]
+		for j := 0; j < cols; j++ {
 			// All CSV data is of type string, but we want to store heart rates as integers.
-			hr, err := strconv.Atoi(row[j+1])
+			hr, err := strconv.Atoi(line[j+1])
 			if err != nil {
-				return nil, errors.Wrapf(err, "Cannot convert string '%s' to int", row[j])
+				return nil, errors.Wrapf(err, "Cannot convert string '%s' to int", line[j])
 			}
 			data[i].Hrate[j] = hr
 		}
@@ -117,13 +114,16 @@ func read(r io.Reader) (Table, error) {
 }
 
 func process(data Table) Table {
-	stats := makeTable(*rows, 3) // We store avg, min, and max
+	rows := len(data)
+	stats := makeTable(rows, 3) // We store avg, min, and max
 
-	for i := 0; i < *rows; i++ {
+	for i := 0; i < rows; i++ {
 		sum := 0   // used for calculating average heard frequency
 		min := 999 // larger than any possible human heart rate
 		max := 0
-		for j := 0; j < *cols; j++ {
+		cols := len(data[0].Hrate)
+
+		for j := 0; j < cols; j++ {
 			hr := data[i].Hrate[j]
 			sum += hr
 			if hr < min {
@@ -134,15 +134,14 @@ func process(data Table) Table {
 			}
 		}
 		stats[i].Name = data[i].Name
-		stats[i].Hrate[0] = sum / *cols
+		stats[i].Hrate[0] = sum / cols
 		stats[i].Hrate[1] = min
 		stats[i].Hrate[2] = max
 	}
 	return stats
 }
 
-func writeToFile(prefix string, t Table) (err error) {
-	name := fileName(prefix, *rows, *cols)
+func writeToFile(name string, t Table) (err error) {
 	f, err := os.Create(name)
 	if err != nil {
 		return errors.Wrapf(err, "Cannot create %s", name)
@@ -163,7 +162,7 @@ func write(t Table, w io.Writer) error {
 	// We want a header row in our output CSV file.
 	cw.Write([]string{"Name", "avg", "min", "max"})
 
-	for i := 0; i < *rows; i++ {
+	for i := 0; i < len(t); i++ {
 		// Turn our stats into strings.
 		// With more than three values, a loop might be preferable.
 		row := []string{
@@ -181,7 +180,17 @@ func write(t Table, w io.Writer) error {
 	return nil
 }
 
-func generate(name string, rows, cols int) error {
+func generateIfNotExists(name string, rows, cols int) error {
+	_, err := os.Stat(name)
+	if err == nil {
+		// File exists, no need for creating one.
+		return nil
+	}
+	if !os.IsNotExist(err) {
+		// Only a "not exists" error is expected here.
+		return errors.Wrap(err, "Unexpected error on os.Stat")
+	}
+
 	f, err := os.Create(name)
 	if err != nil {
 		return errors.Wrapf(err, "Cannot create %s", name)
