@@ -7,7 +7,9 @@ import (
 	"io"
 	"log"
 	"os"
+	"runtime/trace"
 	"strconv"
+	"time"
 
 	"golang.org/x/sync/errgroup"
 
@@ -35,8 +37,19 @@ func main() {
 	// Generate a file name based on the # of rows and columns.
 	dfname := fileName("data", *rows, *cols)
 
-	// Generate the file if it does not exist yet.
+	// Generate the file only if it does not exist yet.
 	generateIfNotExists(dfname, *rows, *cols)
+
+	tf, err := os.Create("trace.out")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer tf.Close()
+	err = trace.Start(tf)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer trace.Stop()
 
 	file, rch, errch, err := readFromFile(dfname, *rows)
 	if err != nil {
@@ -59,6 +72,7 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+
 }
 
 func fileName(p string, r, c int) string {
@@ -174,6 +188,7 @@ func process(rch chan Row, bufsize int) chan Row {
 			}
 			wch <- stats
 		}
+		time.Sleep(100 * time.Millisecond)
 		close(wch)
 	}()
 	return wch

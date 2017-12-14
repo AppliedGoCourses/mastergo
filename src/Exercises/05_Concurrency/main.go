@@ -7,7 +7,9 @@ import (
 	"io"
 	"log"
 	"os"
+	"runtime/trace"
 	"strconv"
+	"time"
 
 	gf "github.com/brianvoe/gofakeit"
 	"github.com/pkg/errors"
@@ -32,9 +34,22 @@ func main() {
 
 	flag.Parse()
 
+	// Generate a file name based on the # of rows and columns.
 	dfname := fileName("data", *rows, *cols)
 
+	// Generate the file only if it does not exist yet.
 	generateIfNotExists(dfname, *rows, *cols)
+
+	tf, err := os.Create("trace.out")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer tf.Close()
+	err = trace.Start(tf)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer trace.Stop()
 
 	data, err := readFromFile(dfname, *rows, *cols)
 	if err != nil {
@@ -138,6 +153,7 @@ func process(data Table) Table {
 		stats[i].Hrate[1] = min
 		stats[i].Hrate[2] = max
 	}
+	time.Sleep(100 * time.Millisecond)
 	return stats
 }
 

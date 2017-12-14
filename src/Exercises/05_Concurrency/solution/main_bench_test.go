@@ -1,17 +1,19 @@
 package main
 
 import (
+	"log"
 	"sync"
 	"testing"
 )
 
 var once = sync.Once{}
-var size = 1000
+var r = *rows
+var c = *cols
 
 func setup(b *testing.B) (filename string) {
-	filename = fileName("benchmark", size, size)
+	filename = fileName("benchmark", r, c)
 	once.Do(func() {
-		err := generateIfNotExists(filename, size, size)
+		err := generateIfNotExists(filename, r, c)
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -23,36 +25,50 @@ func Benchmark_read(b *testing.B) {
 	fname := setup(b)
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
-		f, _, _, err := readFromFile(fname, size)
+		f, out, errch, err := readFromFile(fname, r)
 		if err != nil {
 			b.Fatal(err)
 		}
-		f.Close()
+		defer f.Close()
+		go func() {
+			select {
+			case err := <-errch:
+				log.Fatalln(err)
+			}
+		}()
+		sum := 0
+		for row, ok := <-out; ok; row, ok = <-out {
+			sum += row.Hrate[0]
+		}
 	}
 }
 
 func Benchmark_process(b *testing.B) {
 	fname := setup(b)
-	f, ch, _, err := readFromFile(fname, size)
+	f, ch, _, err := readFromFile(fname, r)
 	defer f.Close()
 	b.ResetTimer()
 	if err != nil {
 		b.Fatal(err)
 	}
 	for n := 0; n < b.N; n++ {
-		_ = process(ch, size)
+		out := process(ch, r)
+		sum := 0
+		for row, ok := <-out; ok; row, ok = <-out {
+			sum += row.Hrate[0]
+		}
 	}
 }
 
 func Benchmark_write(b *testing.B) {
 	fname := setup(b)
-	f, rch, _, err := readFromFile(fname, size)
+	f, rch, _, err := readFromFile(fname, r)
 	if err != nil {
 		b.Fatal(err)
 	}
 	defer f.Close()
-	wch := process(rch, size)
-	sfname := fileName("benchmarkstats", size, size)
+	wch := process(rch, r)
+	sfname := fileName("benchmarkstats", r, c)
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		err := writeToFile(sfname, wch)
@@ -63,20 +79,20 @@ func Benchmark_write(b *testing.B) {
 }
 
 func Benchmark_all(b *testing.B) {
-	dfname := fileName("benchmark", size, size)
+	dfname := setup(b)
 	for n := 0; n < b.N; n++ {
-		f, rch, _, err := readFromFile(dfname, size)
+		f, rch, _, err := readFromFile(dfname, r)
 		if err != nil {
 			b.Fatal(err)
 		}
 		defer f.Close()
 
-		wch := process(rch, size)
+		wch := process(rch, r)
 		if err != nil {
 			b.Fatal(err)
 		}
 
-		sfname := fileName("benchmarkstats", size, size)
+		sfname := fileName("benchmarkstats", r, c)
 		err = writeToFile(sfname, wch)
 		if err != nil {
 			b.Fatal(err)
