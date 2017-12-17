@@ -58,7 +58,10 @@ func Benchmark_write(b *testing.B) {
 	sfname := fileName("benchmarkstats", size, size)
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
-		writeToFile(sfname, res)
+		err := writeToFile(sfname, res)
+		if err != nil {
+			b.Fatal(err)
+		}
 	}
 }
 

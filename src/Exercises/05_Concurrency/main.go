@@ -133,27 +133,43 @@ func process(data Table) Table {
 	stats := makeTable(rows, 3) // We store avg, min, and max
 
 	for i := 0; i < rows; i++ {
-		sum := 0   // used for calculating average heard frequency
-		min := 999 // larger than any possible human heart rate
-		max := 0
-		cols := len(data[0].Hrate)
 
-		for j := 0; j < cols; j++ {
-			hr := data[i].Hrate[j]
-			sum += hr
-			if hr < min {
-				min = hr
-			}
-			if hr > max {
-				max = hr
-			}
-		}
-		stats[i].Name = data[i].Name
-		stats[i].Hrate[0] = sum / cols
-		stats[i].Hrate[1] = min
-		stats[i].Hrate[2] = max
+		stats[i] = letTheServerEvaluateThis(data[i])
+
 	}
-	time.Sleep(100 * time.Millisecond)
+	return stats
+}
+
+// This function simulates a server that stores and evaluates
+// all training data. As a matter of fact, it needs some time to
+// send the results back.
+func letTheServerEvaluateThis(data Row) Row {
+	// simulate work
+	time.Sleep(10 * time.Millisecond)
+
+	sum := 0   // used for calculating average heard frequency
+	min := 999 // larger than any possible human heart rate
+	max := 0
+	cols := len(data.Hrate)
+
+	for j := 0; j < cols; j++ {
+		hr := data.Hrate[j]
+		sum += hr
+		if hr < min {
+			min = hr
+		}
+		if hr > max {
+			max = hr
+		}
+	}
+	stats := Row{
+		Name: data.Name,
+		Hrate: []int{
+			sum / cols,
+			min,
+			max,
+		},
+	}
 	return stats
 }
 

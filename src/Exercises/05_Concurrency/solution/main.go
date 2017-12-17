@@ -40,6 +40,7 @@ func main() {
 	// Generate the file only if it does not exist yet.
 	generateIfNotExists(dfname, *rows, *cols)
 
+	// NOTE Tracing start
 	tf, err := os.Create("trace.out")
 	if err != nil {
 		log.Fatalln(err)
@@ -50,6 +51,7 @@ func main() {
 		log.Fatalln(err)
 	}
 	defer trace.Stop()
+	// NOTE Tracing end
 
 	file, rch, errch, err := readFromFile(dfname, *rows)
 	if err != nil {
@@ -163,35 +165,45 @@ func process(rch chan Row, bufsize int) chan Row {
 
 	go func() {
 		for data, ok := <-rch; ok; data, ok = <-rch {
-			sum := 0   // used for calculating average heard frequency
-			min := 999 // larger than any possible human heart rate
-			max := 0
-			cols := len(data.Hrate)
 
-			for j := 0; j < cols; j++ {
-				hr := data.Hrate[j]
-				sum += hr
-				if hr < min {
-					min = hr
-				}
-				if hr > max {
-					max = hr
-				}
-			}
-			stats := Row{
-				Name: data.Name,
-				Hrate: []int{
-					sum / cols,
-					min,
-					max,
-				},
-			}
-			wch <- stats
+			wch <- letTheServerEvaluateThis(data)
 		}
-		time.Sleep(100 * time.Millisecond)
 		close(wch)
 	}()
 	return wch
+}
+
+// This function simulates a server that stores and evaluates
+// all training data. As a matter of fact, it needs some time to
+// send the results back.
+func letTheServerEvaluateThis(data Row) Row {
+	// simulate work
+	time.Sleep(10 * time.Millisecond)
+
+	sum := 0   // used for calculating average heard frequency
+	min := 999 // larger than any possible human heart rate
+	max := 0
+	cols := len(data.Hrate)
+
+	for j := 0; j < cols; j++ {
+		hr := data.Hrate[j]
+		sum += hr
+		if hr < min {
+			min = hr
+		}
+		if hr > max {
+			max = hr
+		}
+	}
+	stats := Row{
+		Name: data.Name,
+		Hrate: []int{
+			sum / cols,
+			min,
+			max,
+		},
+	}
+	return stats
 }
 
 func writeToFile(name string, ch chan Row) (err error) {

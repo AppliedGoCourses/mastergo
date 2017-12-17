@@ -1,9 +1,9 @@
 goos: darwin
 goarch: amd64
 pkg: Exercises/05_Concurrency/solution
-Benchmark_read-8      	      10	 135226431 ns/op
-Benchmark_process-8   	      10	 114102466 ns/op
-Benchmark_write-8     	     500	   2758874 ns/op
-Benchmark_all-8       	       5	 234342619 ns/op
+Benchmark_read-8      	      10	 133127606 ns/op
+Benchmark_process-8   	       1	10834581650 ns/op
+Benchmark_write-8     	       1	10790787241 ns/op
+Benchmark_all-8       	       1	10926681418 ns/op
 PASS
-ok  	Exercises/05_Concurrency/solution	7.543s
+ok  	Exercises/05_Concurrency/solution	34.036s
