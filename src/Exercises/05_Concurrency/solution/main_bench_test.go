@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"sync"
 	"testing"
@@ -11,6 +12,9 @@ var r = *rows
 var c = *cols
 
 func setup(b *testing.B) (filename string) {
+	flag.Parse()
+	r = *rows
+	c = *cols
 	filename = fileName("benchmark", r, c)
 	once.Do(func() {
 		err := generateIfNotExists(filename, r, c)
