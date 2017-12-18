@@ -23,8 +23,9 @@ type Row struct {
 type Table []Row
 
 var (
-	rows = flag.Int("rows", 1000, "Number of rows")
-	cols = flag.Int("cols", 1000, "Number of columns")
+	rows  = flag.Int("rows", 1000, "Number of rows")
+	cols  = flag.Int("cols", 1000, "Number of columns")
+	delay = flag.Duration("delay", 1*time.Millisecond, "Delay of the simulated server's response in ms")
 )
 
 func main() {
@@ -40,6 +41,7 @@ func main() {
 	// Generate the file only if it does not exist yet.
 	generateIfNotExists(dfname, *rows, *cols)
 
+	// Tracing START
 	tf, err := os.Create("trace.out")
 	if err != nil {
 		log.Fatalln(err)
@@ -50,6 +52,7 @@ func main() {
 		log.Fatalln(err)
 	}
 	defer trace.Stop()
+	// Tracing END
 
 	data, err := readFromFile(dfname, *rows, *cols)
 	if err != nil {
@@ -64,22 +67,6 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-}
-
-func makeTable(r, c int) Table {
-	// Return value "Table" does not need to be a pointer, since it represents
-	// a slice header that consists of len, cap, and a pointer to the actual
-	// data. Remember the lecture on slices!
-	t := make(Table, r, r) // set len and cap to # of rows
-	for i := 0; i < r; i++ {
-		// Pre-allocate a row
-		t[i].Hrate = make([]int, c, c) // set len and cap to # of cols
-	}
-	return t
-}
-
-func fileName(p string, r, c int) string {
-	return fmt.Sprintf("%s%sx%s.csv", p, strconv.Itoa(r), strconv.Itoa(c))
 }
 
 // readFromFile is a file handling wrapper for read().
@@ -134,41 +121,8 @@ func process(data Table) Table {
 
 	for i := 0; i < rows; i++ {
 
-		stats[i] = letTheServerEvaluateThis(data[i])
+		stats[i] = simulateSlowServer(data[i])
 
-	}
-	return stats
-}
-
-// This function simulates a server that stores and evaluates
-// all training data. As a matter of fact, it needs some time to
-// send the results back.
-func letTheServerEvaluateThis(data Row) Row {
-	// simulate work
-	time.Sleep(10 * time.Millisecond)
-
-	sum := 0   // used for calculating average heard frequency
-	min := 999 // larger than any possible human heart rate
-	max := 0
-	cols := len(data.Hrate)
-
-	for j := 0; j < cols; j++ {
-		hr := data.Hrate[j]
-		sum += hr
-		if hr < min {
-			min = hr
-		}
-		if hr > max {
-			max = hr
-		}
-	}
-	stats := Row{
-		Name: data.Name,
-		Hrate: []int{
-			sum / cols,
-			min,
-			max,
-		},
 	}
 	return stats
 }
@@ -212,6 +166,25 @@ func write(t Table, w io.Writer) error {
 	return nil
 }
 
+// *** NOTE: All functions below this point are just helper functions.
+// *** No need to optimize anything here.
+
+func makeTable(r, c int) Table {
+	// Return value "Table" does not need to be a pointer, since it represents
+	// a slice header that consists of len, cap, and a pointer to the actual
+	// data. Remember the lecture on slices!
+	t := make(Table, r, r) // set len and cap to # of rows
+	for i := 0; i < r; i++ {
+		// Pre-allocate a row
+		t[i].Hrate = make([]int, c, c) // set len and cap to # of cols
+	}
+	return t
+}
+
+func fileName(p string, r, c int) string {
+	return fmt.Sprintf("%s%sx%s.csv", p, strconv.Itoa(r), strconv.Itoa(c))
+}
+
 func generateIfNotExists(name string, rows, cols int) error {
 	_, err := os.Stat(name)
 	if err == nil {
@@ -240,3 +213,37 @@ func generateIfNotExists(name string, rows, cols int) error {
 	}
 	return nil
 }
+
+// This function simulates a server that stores and evaluates
+// all training data. As a matter of fact, it needs some time to
+// send the results back.
+func simulateSlowServer(data Row) Row {
+	// simulate work
+	time.Sleep(*delay)
+
+	sum := 0   // used for calculating average heard frequency
+	min := 999 // larger than any possible human heart rate
+	max := 0
+	cols := len(data.Hrate)
+
+	for j := 0; j < cols; j++ {
+		hr := data.Hrate[j]
+		sum += hr
+		if hr < min {
+			min = hr
+		}
+		if hr > max {
+			max = hr
+		}
+	}
+	stats := Row{
+		Name: data.Name,
+		Hrate: []int{
+			sum / cols,
+			min,
+			max,
+		},
+	}
+	return stats
+}
+
