@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"reflect"
+	"sort"
 	"strings"
 	"testing"
 )
@@ -112,6 +113,19 @@ func Test_process(t *testing.T) {
 			for row, ok := <-out; ok; row, ok = <-out {
 				got = append(got, row)
 			}
+
+			// The concurrent version does not enforce to preserve the
+			// original sequence of rows.
+			// Therefore, we need to sort the output from process() before
+			// comparing against the wanted result.
+			byName := func(i, j int) bool {
+				if got[i].Name < got[j].Name {
+					return true
+				}
+				return false
+			}
+			sort.Slice(got, byName)
+
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("process() = \n%#v\nwant = \n%#v", got, tt.want)
 			}
