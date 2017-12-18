@@ -1,0 +1,5 @@
+benchmark               old ns/op     new ns/op     delta
+Benchmark_read-8        13580111      13197157      -2.82%
+Benchmark_process-8     116496682     5478          -100.00%
+Benchmark_write-8       2320350       1857006       -19.97%
+Benchmark_all-8         133442334     14580428      -89.07%
