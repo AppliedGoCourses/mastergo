@@ -80,10 +80,6 @@ func main() {
 
 }
 
-func fileName(p string, r, c int) string {
-	return fmt.Sprintf("%s%sx%s.csv", p, strconv.Itoa(r), strconv.Itoa(c))
-}
-
 // readFromFile is a file handling wrapper for read().
 // This way we can make read() testable with non-file data.
 func readFromFile(name string, bufsize int) (*os.File, chan Row, chan error, error) {
@@ -164,7 +160,7 @@ func read(r io.Reader, bufsize int) (chan Row, chan error) {
 
 func process(rch chan Row, bufsize int) chan Row {
 
-	wch := make(chan Row, bufsize)
+	wch := make(chan Row, runtime.NumCPU())
 
 	numGoroutines := runtime.NumCPU()
 	wg := sync.WaitGroup{}
@@ -185,39 +181,6 @@ func process(rch chan Row, bufsize int) chan Row {
 	}()
 
 	return wch
-}
-
-// This function simulates a server that stores and evaluates
-// all training data. As a matter of fact, it needs some time to
-// send the results back.
-func simulateSlowServer(data Row) Row {
-	// simulate work
-	time.Sleep(*delay)
-
-	sum := 0   // used for calculating average heard frequency
-	min := 999 // larger than any possible human heart rate
-	max := 0
-	cols := len(data.Hrate)
-
-	for j := 0; j < cols; j++ {
-		hr := data.Hrate[j]
-		sum += hr
-		if hr < min {
-			min = hr
-		}
-		if hr > max {
-			max = hr
-		}
-	}
-	stats := Row{
-		Name: data.Name,
-		Hrate: []int{
-			sum / cols,
-			min,
-			max,
-		},
-	}
-	return stats
 }
 
 func writeToFile(name string, ch chan Row) (err error) {
@@ -259,6 +222,13 @@ func write(ch chan Row, w io.Writer) error {
 	return nil
 }
 
+// *** NOTE: All functions below this point are just helper functions.
+// *** No need to optimize anything here.
+
+func fileName(p string, r, c int) string {
+	return fmt.Sprintf("%s%sx%s.csv", p, strconv.Itoa(r), strconv.Itoa(c))
+}
+
 func generateIfNotExists(name string, rows, cols int) error {
 	_, err := os.Stat(name)
 	if err == nil {
@@ -289,4 +259,37 @@ func generateIfNotExists(name string, rows, cols int) error {
 		fmt.Fprintln(f)
 	}
 	return nil
+}
+
+// This function simulates a server that stores and evaluates
+// all training data. As a matter of fact, it needs some time to
+// send the results back.
+func simulateSlowServer(data Row) Row {
+	// simulate work
+	time.Sleep(*delay)
+
+	sum := 0   // used for calculating average heard frequency
+	min := 999 // larger than any possible human heart rate
+	max := 0
+	cols := len(data.Hrate)
+
+	for j := 0; j < cols; j++ {
+		hr := data.Hrate[j]
+		sum += hr
+		if hr < min {
+			min = hr
+		}
+		if hr > max {
+			max = hr
+		}
+	}
+	stats := Row{
+		Name: data.Name,
+		Hrate: []int{
+			sum / cols,
+			min,
+			max,
+		},
+	}
+	return stats
 }
