@@ -7,7 +7,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"runtime/trace"
 	"strconv"
 	"time"
 
@@ -40,19 +39,6 @@ func main() {
 
 	// Generate the file only if it does not exist yet.
 	generateIfNotExists(dfname, *rows, *cols)
-
-	// Tracing START
-	tf, err := os.Create("trace.out")
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer tf.Close()
-	err = trace.Start(tf)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer trace.Stop()
-	// Tracing END
 
 	data, err := readFromFile(dfname, *rows, *cols)
 	if err != nil {
@@ -246,4 +232,3 @@ func simulateSlowServer(data Row) Row {
 	}
 	return stats
 }
-

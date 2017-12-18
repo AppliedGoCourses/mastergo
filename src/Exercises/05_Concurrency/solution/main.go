@@ -43,19 +43,6 @@ func main() {
 	// Generate the file only if it does not exist yet.
 	generateIfNotExists(dfname, *rows, *cols)
 
-	// Tracing START
-	tf, err := os.Create("trace.out")
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer tf.Close()
-	err = trace.Start(tf)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer trace.Stop()
-	// Tracing END
-
 	file, rch, errch, err := readFromFile(dfname, *rows)
 	if err != nil {
 		log.Fatalln(err)
