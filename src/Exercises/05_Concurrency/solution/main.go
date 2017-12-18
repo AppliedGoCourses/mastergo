@@ -7,8 +7,10 @@ import (
 	"io"
 	"log"
 	"os"
+	"runtime"
 	"runtime/trace"
 	"strconv"
+	"sync"
 	"time"
 
 	"golang.org/x/sync/errgroup"
@@ -23,8 +25,9 @@ type Row struct {
 }
 
 var (
-	rows = flag.Int("rows", 1000, "Number of rows")
-	cols = flag.Int("cols", 1000, "Number of columns")
+	rows  = flag.Int("rows", 1000, "Number of rows")
+	cols  = flag.Int("cols", 1000, "Number of columns")
+	delay = flag.Duration("delay", 1*time.Millisecond, "Delay of the simulated server's response in ms")
 )
 
 func main() {
@@ -40,7 +43,7 @@ func main() {
 	// Generate the file only if it does not exist yet.
 	generateIfNotExists(dfname, *rows, *cols)
 
-	// NOTE Tracing start
+	// Tracing START
 	tf, err := os.Create("trace.out")
 	if err != nil {
 		log.Fatalln(err)
@@ -51,7 +54,7 @@ func main() {
 		log.Fatalln(err)
 	}
 	defer trace.Stop()
-	// NOTE Tracing end
+	// Tracing END
 
 	file, rch, errch, err := readFromFile(dfname, *rows)
 	if err != nil {
@@ -163,22 +166,33 @@ func process(rch chan Row, bufsize int) chan Row {
 
 	wch := make(chan Row, bufsize)
 
-	go func() {
-		for data, ok := <-rch; ok; data, ok = <-rch {
+	numGoroutines := runtime.NumCPU()
+	wg := sync.WaitGroup{}
+	wg.Add(numGoroutines)
 
-			wch <- letTheServerEvaluateThis(data)
-		}
+	for i := 0; i < numGoroutines; i++ {
+		go func() {
+			for data, ok := <-rch; ok; data, ok = <-rch {
+
+				wch <- simulateSlowServer(data)
+			}
+			wg.Done()
+		}()
+	}
+	go func() {
+		wg.Wait()
 		close(wch)
 	}()
+
 	return wch
 }
 
 // This function simulates a server that stores and evaluates
 // all training data. As a matter of fact, it needs some time to
 // send the results back.
-func letTheServerEvaluateThis(data Row) Row {
+func simulateSlowServer(data Row) Row {
 	// simulate work
-	time.Sleep(10 * time.Millisecond)
+	time.Sleep(*delay)
 
 	sum := 0   // used for calculating average heard frequency
 	min := 999 // larger than any possible human heart rate
