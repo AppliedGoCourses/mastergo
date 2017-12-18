@@ -8,7 +8,6 @@ import (
 	"log"
 	"os"
 	"runtime"
-	"runtime/trace"
 	"strconv"
 	"sync"
 	"time"
