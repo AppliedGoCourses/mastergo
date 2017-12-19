@@ -107,7 +107,9 @@ func process(data Table) Table {
 
 	for i := 0; i < rows; i++ {
 
-		stats[i] = simulateSlowServer(data[i])
+		go func(n int) {
+			stats[n] = simulateSlowServer(data[n])
+		}(i)
 
 	}
 	return stats
