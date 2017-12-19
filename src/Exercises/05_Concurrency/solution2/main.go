@@ -7,7 +7,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"runtime"
 	"strconv"
 	"sync"
 	"time"
@@ -146,9 +145,9 @@ func read(r io.Reader, bufsize int) (chan Row, chan error) {
 
 func process(rch chan Row, bufsize int) chan Row {
 
-	wch := make(chan Row, runtime.NumCPU())
+	wch := make(chan Row, bufsize)
 
-	numGoroutines := runtime.NumCPU()
+	numGoroutines := bufsize
 	wg := sync.WaitGroup{}
 	wg.Add(numGoroutines)
 
