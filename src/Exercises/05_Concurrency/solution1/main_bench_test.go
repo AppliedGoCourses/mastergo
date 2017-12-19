@@ -24,11 +24,6 @@ func setup(b *testing.B) (filename string) {
 	return filename
 }
 
-func Benchmark_makeTable(b *testing.B) {
-	for n := 0; n < b.N; n++ {
-		makeTable(r, c)
-	}
-}
 func Benchmark_read(b *testing.B) {
 	fname := setup(b)
 	b.ResetTimer()
