@@ -143,11 +143,11 @@ func read(r io.Reader, bufsize int) (chan Row, chan error) {
 	return ch, errch
 }
 
-func process(rch chan Row, bufsize int) chan Row {
+func process(rch chan Row, rows int) chan Row {
 
-	wch := make(chan Row, bufsize)
+	wch := make(chan Row, rows)
 
-	numGoroutines := bufsize
+	numGoroutines := rows
 	wg := sync.WaitGroup{}
 	wg.Add(numGoroutines)
 
