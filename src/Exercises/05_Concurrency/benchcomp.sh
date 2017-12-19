@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 ROWS=1000
 COLS=10
-DELAY=100ns
+DELAY=1ms
 echo "Benchmarking serial code (rows=$ROWS, cols=$COLS, delay=$DELAY)"
 go test -run=NONE -bench=. -args -rows=$ROWS -cols=$COLS -delay=$DELAY >bench.out
 cd solution1
