@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	gf "github.com/brianvoe/gofakeit"
@@ -105,13 +106,19 @@ func process(data Table) Table {
 	rows := len(data)
 	stats := makeTable(rows, 3) // We store avg, min, and max
 
+	wg := sync.WaitGroup{}
+	wg.Add(rows)
+
 	for i := 0; i < rows; i++ {
 
 		go func(n int) {
 			stats[n] = simulateSlowServer(data[n])
+			wg.Done()
 		}(i)
 
 	}
+
+	wg.Wait()
 	return stats
 }
 
