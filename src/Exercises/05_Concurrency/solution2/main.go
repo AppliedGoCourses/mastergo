@@ -67,17 +67,17 @@ func main() {
 
 // readFromFile is a file handling wrapper for read().
 // This way we can make read() testable with non-file data.
-func readFromFile(name string, bufsize int) (*os.File, chan Row, chan error, error) {
+func readFromFile(name string, rows int) (*os.File, chan Row, chan error, error) {
 	f, err := os.Open(name)
 	if err != nil {
 		return nil, nil, nil, errors.Wrapf(err, "Cannot read %s", name)
 	}
 
-	rch, ech := read(f, bufsize)
+	rch, ech := read(f, rows)
 	return f, rch, ech, nil
 }
 
-func read(r io.Reader, bufsize int) (chan Row, chan error) {
+func read(r io.Reader, rows int) (chan Row, chan error) {
 	// A CSV reader is aware of the structure and syntax of a CSV file.
 	// NewReader expects an io.Reader, and os.File implements io.Reader,
 	// so we can simply pass in the open file.
@@ -88,7 +88,7 @@ func read(r io.Reader, bufsize int) (chan Row, chan error) {
 	cr.ReuseRecord = true
 
 	// Create a buffered channel for sending rows to process()
-	ch := make(chan Row, bufsize)
+	ch := make(chan Row, rows)
 
 	// Our goroutines might produce errors. To handle these,
 	// we use an errgroup.
@@ -147,11 +147,10 @@ func process(rch chan Row, rows int) chan Row {
 
 	wch := make(chan Row, rows)
 
-	numGoroutines := rows
 	wg := sync.WaitGroup{}
-	wg.Add(numGoroutines)
+	wg.Add(rows)
 
-	for i := 0; i < numGoroutines; i++ {
+	for i := 0; i < rows; i++ {
 		go func() {
 			for data, ok := <-rch; ok; data, ok = <-rch {
 
