@@ -7,9 +7,10 @@ import (
 	"testing"
 )
 
-var once = sync.Once{}
-var r = *rows
-var c = *cols
+var (
+	once = sync.Once{}
+	r, c int
+)
 
 func setup(b *testing.B) (filename string) {
 	flag.Parse()

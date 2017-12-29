@@ -97,8 +97,7 @@ func Test_process(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			in := make(chan Row)
-			out := process(in, tt.bufsz)
+			in := make(chan Row, tt.bufsz)
 
 			// feed the process goroutine with rows.
 			go func() {
@@ -107,6 +106,8 @@ func Test_process(t *testing.T) {
 				}
 				close(in)
 			}()
+
+			out := process(in, tt.bufsz)
 
 			// Collect rows from the output channel.
 			got := []Row{}

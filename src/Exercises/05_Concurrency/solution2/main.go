@@ -107,6 +107,9 @@ func read(r io.Reader, rows int) (chan Row, chan error) {
 			if err != nil {
 				return errors.Wrap(err, "Cannot read row")
 			}
+			if len(line) == 0 { // skip empty lines
+				continue
+			}
 
 			// Create a new Row and fill it with CSV data.
 			cols := len(line) - 1 // do not count the name column
@@ -148,16 +151,13 @@ func process(rch chan Row, rows int) chan Row {
 	wch := make(chan Row, rows)
 
 	wg := sync.WaitGroup{}
-	wg.Add(rows)
 
-	for i := 0; i < rows; i++ {
-		go func() {
-			for data, ok := <-rch; ok; data, ok = <-rch {
-
-				wch <- simulateSlowServer(data)
-			}
+	for row, ok := <-rch; ok; row, ok = <-rch {
+		wg.Add(1)
+		go func(r Row) {
+			wch <- simulateSlowServer(r)
 			wg.Done()
-		}()
+		}(row)
 	}
 	go func() {
 		wg.Wait()
