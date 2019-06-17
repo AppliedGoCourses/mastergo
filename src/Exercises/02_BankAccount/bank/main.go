@@ -52,6 +52,7 @@ bank update <name> <amount>            Deposit or withdraw money.
 bank transfer <name> <name> <amount>   Transfer money between two accounts.
 bank history <name>                    Show an account's transaction history.
 `)
+	os.Exit(1)
 }
 
 // update takes a name and an amount, deposits the amount if it

@@ -4,12 +4,7 @@ import (
 	"fmt"
 	"sort"
 
-	// Note: avoid local import paths if possible. Create your project
-	// in a location below $GOPATH/src that would resemble a valid
-	// import URL, in order to be able to publish that project later.
-	// I use a local import path here because I don't know where you
-	// will put the code.
-	"./temperr"
+	"Lectures/19_interfaces/temperr"
 )
 
 func main() {
