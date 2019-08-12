@@ -1,0 +1,9 @@
+goos: darwin
+goarch: amd64
+pkg: github.com/AppliedGoCourses/mastergo/5_AdvancedTopics/30_Exercise_Concurrency/solution2
+Benchmark_read-4      	    2000	    870358 ns/op
+Benchmark_process-4   	   50000	     26489 ns/op
+Benchmark_write-4     	   10000	    194444 ns/op
+Benchmark_all-4       	     500	   3080097 ns/op
+PASS
+ok  	github.com/AppliedGoCourses/mastergo/5_AdvancedTopics/30_Exercise_Concurrency/solution2	7.395s
