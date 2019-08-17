@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
-	"mastergolib/dice"
+
+	"../dice"
 )
 
 func main() {
+	dice.Seed(0)
 	fmt.Println(dice.Roll(6))
 	fmt.Println(dice.Roll(12))
 	fmt.Println(dice.Roll(20))
