@@ -32,8 +32,9 @@ func main() {
 	fmt.Println("With composite literal:")
 	fmt.Printf("Before appendOne:\n&s1: %p %[1]v\n&s2: %p %[2]v\n", s1, s2)
 	appendOne(&s1)
+	fmt.Printf("After appendOne:\n&s1: %p %[1]v\n&s2: %p %[2]v\n", s1, s2)
 	s1[0] = 2
-	fmt.Printf("After  appendOne:\n&s1: %p %[1]v\n&s2: %p %[2]v\n", s1, s2)
+	fmt.Printf("After changing s1:\n&s1: %p %[1]v\n&s2: %p %[2]v\n", s1, s2)
 
 	fmt.Print(`
 Here we can see that append() allocates a new slice at a different address.
