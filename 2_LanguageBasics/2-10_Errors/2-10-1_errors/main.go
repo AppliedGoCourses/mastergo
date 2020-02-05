@@ -19,18 +19,11 @@ func verify(i int) error {
 
 // Propagate an error value to the caller.
 // A good style is to wrap the error into a new message
-// to create a simple trace through the failing call chain.
+// that adds relevant context.
 func propagate(i int) error {
 	// "if action; check error" style
 	if err := verify(i); err != nil {
-		return fmt.Errorf("propagate: %s", err)
-
-		// Or try the convenience library "pkg/errors".
-		// Install it by calling
-		//     go get github.com/pkg/errors
-		// Then uncomment the following line:
-
-		// return errors.Wrap(err, "pkgErrors")
+		return fmt.Errorf("propagate: %w", err)
 	}
 	return nil
 }
@@ -79,7 +72,7 @@ func main() {
 		fmt.Println(err)
 	}
 
-	fmt.Println("\n*** HANDLING ERRORS ***\n")
+	fmt.Println("\n*** ERROR HANDLING STRATEGIES ***\n")
 
 	// propagate wraps the error into a new one and passes this to the caller.
 	if err := propagate(-1); err != nil {
