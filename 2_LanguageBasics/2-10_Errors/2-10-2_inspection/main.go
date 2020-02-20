@@ -6,21 +6,34 @@ import (
 	"os"
 )
 
+// Some data to write to a file
+type Doc struct {
+	ID    int
+	Title string
+	Text  string
+}
+
 // ReadFile returns a wrapped error
 
-func ReadFile(path string) (string, error) {
-	_, err := os.Open(path)
+func WriteDoc(path string, doc Doc) error {
+	_, err := os.OpenFile(path, os.O_WRONLY|os.O_APPEND, 0660)
 	if err != nil {
-		return "", fmt.Errorf("Error reading %s: %w", path, err)
+		return fmt.Errorf("Cannot write document '%s' (id %d): %w", doc.Title, doc.ID, err)
 	}
-	// more file reading...
-	return "file contents", nil
+	// write data...
+	return nil
 }
 
 // Let's inspect the error now.
 
 func main() {
-	s, err := ReadFile("no_such_file")
+	doc := Doc{
+		ID:    20,
+		Title: "Error Inspection",
+		Text:  "In the previous lecture, we learned about wrapping errors...",
+	}
+
+	err := WriteDoc("/path/to/no_file", doc)
 	if err != nil {
 
 		// The error can be unwrapped once
@@ -38,11 +51,8 @@ func main() {
 		var pathErr *os.PathError
 		// Treat the error AS an os.PathError error
 		fmt.Println("err is an os.PathError:", errors.As(err, &pathErr))
-		fmt.Println("pathError info: ", pathErr.Op, "~",
-			pathErr.Path, "~", pathErr.Err)
+		fmt.Println("pathError info - Op:", pathErr.Op, ", Path:",
+			pathErr.Path, "Err:", pathErr.Err)
 		fmt.Println("Did we hit a timeout: ", pathErr.Timeout())
-
-		return
 	}
-	fmt.Println(s)
 }
