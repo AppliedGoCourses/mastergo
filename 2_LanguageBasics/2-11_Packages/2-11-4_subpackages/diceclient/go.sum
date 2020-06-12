@@ -1,0 +1,6 @@
+appliedgo.net/proverbs v0.1.0 h1:aZVBLQCOe6Zjs7yzbyVv2oPUDASItfr25b2zion4CLQ=
+appliedgo.net/proverbs v0.1.0/go.mod h1:WvS1dsWeYaaBEY/EvECsGx8yUZBvEpgHka4yv54D7kk=
+github.com/appliedgocourses/dice v0.1.2 h1:9y8NLRWA1pOBIJb+9rlZ7GuU1g2tTd13aS60hjL0Dqo=
+github.com/appliedgocourses/dice v0.1.2/go.mod h1:qeK3BW6RtvIrKGiVrELHnixhs0V+nIil5wwUvQqFZAw=
+github.com/common-nighthawk/go-figure v0.0.0-20190529165535-67e0ed34491a h1:kTv7wPomOuRf17BKQKO5Y6GrKsYC52XHrjf26H6FdQU=
+github.com/common-nighthawk/go-figure v0.0.0-20190529165535-67e0ed34491a/go.mod h1:mk5IQ+Y0ZeO87b858TlA645sVcEcbiX6YqP98kt+7+w=

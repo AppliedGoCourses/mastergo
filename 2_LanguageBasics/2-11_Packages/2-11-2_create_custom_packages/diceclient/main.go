@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"../dice"
+	"githbu.com/christophberger/dice"
 )
 
 func main() {
