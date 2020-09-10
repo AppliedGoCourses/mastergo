@@ -216,7 +216,7 @@ func simulateSlowServer(data Row) Row {
 	// simulate work
 	time.Sleep(*delay)
 
-	sum := 0   // used for calculating average heard frequency
+	sum := 0   // used for calculating average heart frequency
 	min := 999 // larger than any possible human heart rate
 	max := 0
 	cols := len(data.Hrate)
