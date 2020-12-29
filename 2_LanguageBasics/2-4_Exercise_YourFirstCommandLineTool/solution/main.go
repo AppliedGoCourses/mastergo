@@ -86,7 +86,7 @@ func main() {
 	case from == "meters" && to == "inches":
 		output = input / 0.0254
 	case from == "inches" && to == "meters":
-		output = 0.00254 * input
+		output = 0.0254 * input
 	}
 
 	// Finally, print the result.
