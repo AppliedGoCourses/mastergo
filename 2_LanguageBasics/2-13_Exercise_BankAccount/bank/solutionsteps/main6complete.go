@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/appliedgocourses/bank"
-	"github.com/pkg/errors"
 )
 
 func main() {
@@ -18,13 +17,13 @@ func main() {
 	// Restore the bank data.
 	err := bank.Load()
 	if err != nil {
-		fmt.Println("Cannot restore bank data.\n", errors.WithStack(err))
+		fmt.Println("Cannot restore bank data.\n", err)
 		return
 	}
 	defer func() {
 		err := bank.Save()
 		if err != nil {
-			fmt.Println("Cannot save bank data.\n", errors.WithStack(err))
+			fmt.Println("Cannot save bank data.\n", err)
 		}
 	}()
 
@@ -62,7 +61,7 @@ func main() {
 
 		bal, err := update(name, amount)
 		if err != nil {
-			fmt.Println(errors.WithStack(err))
+			fmt.Println(err)
 			return
 		}
 
@@ -87,7 +86,7 @@ func main() {
 
 		bal1, bal2, err := transfer(name, name2, amount)
 		if err != nil {
-			fmt.Println(errors.WithStack(err))
+			fmt.Println(err)
 			return
 		}
 
@@ -98,7 +97,7 @@ func main() {
 		name := os.Args[2]
 		h, err := history(name)
 		if err != nil {
-			fmt.Println(errors.WithStack(err))
+			fmt.Println(err)
 		}
 		fmt.Printf(h)
 
@@ -128,23 +127,23 @@ bank history <name>                    Show an account's transaction history.
 func update(name string, amount int) (int, error) {
 	account, err := bank.GetAccount(name)
 	if err != nil {
-		return 0, errors.Wrap(err, "account not found")
+		return 0, fmt.Errorf("account not found: %w", err)
 	}
 	if amount == 0 {
-		return bank.Balance(account), errors.New("amount must not be zero")
+		return bank.Balance(account), fmt.Errorf("amount must not be zero")
 	}
 
 	balance := 0
 	if amount > 0 {
 		balance, err = bank.Deposit(account, amount)
 		if err != nil {
-			return balance, errors.Wrap(err, "depositing failed")
+			return balance, fmt.Errorf("depositing failed: %w", err)
 		}
 	} else { // amount < 0
 		// Note: we must negate the amount here. bank.Withdraw() expects a positive value.
 		balance, err = bank.Withdraw(account, -amount)
 		if err != nil {
-			return balance, errors.Wrap(err, "withdrawing failed")
+			return balance, fmt.Errorf("withdrawing failed: %w", err)
 		}
 	}
 	return balance, nil
@@ -156,20 +155,20 @@ func update(name string, amount int) (int, error) {
 func transfer(name, name2 string, amount int) (int, int, error) {
 	account, err := bank.GetAccount(name)
 	if err != nil {
-		return 0, 0, errors.Wrap(err, "transfer: account "+name+" not found")
+		return 0, 0, fmt.Errorf("transfer: account %s not found: %w", name, err)
 	}
 	account2, err := bank.GetAccount(name2)
 	if err != nil {
-		return 0, 0, errors.Wrap(err, "transfer: account "+name2+" not found")
+		return 0, 0, fmt.Errorf("transfer: account %s not found: %w", name2, err)
 	}
 
 	if amount <= 0 {
-		return 0, 0, errors.New("transfer: amount must be positive. Actual value: " + strconv.Itoa(amount))
+		return 0, 0, fmt.Errorf("transfer: amount must be positive. Actual value: %s", strconv.Itoa(amount))
 	}
 
 	bal1, bal2, err := bank.Transfer(account, account2, amount)
 	if err != nil {
-		return 0, 0, errors.Wrap(err, "transfer failed")
+		return 0, 0, fmt.Errorf("transfer failed: %w", err)
 	}
 	return bal1, bal2, nil
 }
@@ -177,7 +176,7 @@ func transfer(name, name2 string, amount int) (int, int, error) {
 func history(name string) (string, error) {
 	account, err := bank.GetAccount(name)
 	if err != nil {
-		return "", errors.Wrap(err, "history: cannot get account "+name)
+		return "", fmt.Errorf("history: cannot get account : %w", err+name)
 	}
 
 	h := fmt.Sprintf("Transaction history for account '%s'\n", name)
