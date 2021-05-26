@@ -3,18 +3,6 @@ package benchmarks
 import "testing"
 
 func BenchmarkFacultyRecursive(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		FacultyRecursive(10)
-	}
-}
-
-func BenchmarkFacultyLoop(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		FacultyLoop(10)
-	}
-}
-
-func BenchmarkFacultyRecursive(b *testing.B) {
 	benchmarks := []struct {
 		name string
 		num  int
@@ -24,6 +12,8 @@ func BenchmarkFacultyRecursive(b *testing.B) {
 		{"20!", 20},
 		{"50!", 50},
 		{"100!", 100},
+		{"500!", 500},
+		{"1000!", 1000},
 	}
 	for _, tt := range benchmarks {
 		b.Run(tt.name, func(b *testing.B) {
@@ -44,6 +34,8 @@ func BenchmarkFacultyLoop(b *testing.B) {
 		{"20!", 20},
 		{"50!", 50},
 		{"100!", 100},
+		{"500!", 500},
+		{"1000!", 1000},
 	}
 	for _, tt := range benchmarks {
 		b.Run(tt.name, func(b *testing.B) {
