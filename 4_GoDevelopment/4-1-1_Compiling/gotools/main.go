@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"gotools/procinfo"
+	"github.com/AppliedGoCourses/mastergo/4_GoDevelopment/4-1-1_Compiling/gotools/procinfo"
 	"log"
 	"os"
 )
