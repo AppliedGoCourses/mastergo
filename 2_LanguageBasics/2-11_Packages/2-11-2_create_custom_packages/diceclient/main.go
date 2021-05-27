@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"githbu.com/christophberger/dice"
+	"github.com/appliedgocourses/dice"
 )
 
 func main() {

@@ -1,8 +1,8 @@
 package quotes
 
 import (
-	"github.com/coreos/bbolt"
 	"github.com/pkg/errors"
+	bolt "go.etcd.io/bbolt"
 )
 
 // DB is a quote database.
