@@ -70,7 +70,7 @@ func TestApp_getQuote(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := app.getQuote(tt.author)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("App.getQuote() error = %s, wantErr %s", err, tt.wantErr)
+				t.Errorf("App.getQuote() error = %s, wantErr %t", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
