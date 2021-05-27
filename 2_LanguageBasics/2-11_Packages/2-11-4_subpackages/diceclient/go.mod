@@ -1,8 +1,5 @@
-module main
+module github.com/AppliedGoCourses/mastergo/2_LanguageBasics/2-11_Packages/2-11-4_subpackages/diceclient
 
-go 1.14
+go 1.16
 
-require (
-	appliedgo.net/proverbs v0.1.0 // indirect
-	github.com/appliedgocourses/dice v0.1.2 // indirect
-)
+require github.com/appliedgocourses/dice v0.3.0
