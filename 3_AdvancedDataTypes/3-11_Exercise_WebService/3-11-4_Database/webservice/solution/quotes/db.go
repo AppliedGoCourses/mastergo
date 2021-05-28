@@ -52,7 +52,7 @@ func (d *DB) Create(q *Quote) error {
 		// Turn the Quote into []byte and save it in the bucket.
 		b, err := q.Serialize()
 		if err != nil {
-			return errors.Wrapf(err, "Create: cannot serialize quote from", q.Author)
+			return errors.Wrapf(err, "Create: cannot serialize quote from %s", q.Author)
 		}
 		err = bucket.Put([]byte(q.Author), b)
 		if err != nil {
