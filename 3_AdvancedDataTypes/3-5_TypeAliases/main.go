@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"Lectures/18_TypeAliases/oldlib"
+	"github.com/AppliedGoCourses/mastergo/3_AdvancedDataTypes/3-5_TypeAliases/oldlib"
 )
 
 func main() {

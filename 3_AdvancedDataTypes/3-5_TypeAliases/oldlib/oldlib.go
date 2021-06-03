@@ -1,7 +1,7 @@
 package oldlib
 
 import (
-	"Lectures/18_TypeAliases/newlib"
+	"github.com/AppliedGoCourses/mastergo/3_AdvancedDataTypes/3-5_TypeAliases/newlib"
 )
 
 const MyConst = newlib.MyConst
