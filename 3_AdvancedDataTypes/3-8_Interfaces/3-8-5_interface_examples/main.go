@@ -1,10 +1,9 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"sort"
-
-	"Lectures/19_interfaces/temperr"
 )
 
 func main() {
@@ -39,7 +38,7 @@ var numFailures int
 func failTemporarily() error {
 	numFailures--
 	if numFailures > 0 {
-		return temperr.New("Temp error")
+		return errors.New("Temp error")
 	}
 	return nil
 }
