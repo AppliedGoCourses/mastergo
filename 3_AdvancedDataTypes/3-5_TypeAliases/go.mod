@@ -2,6 +2,8 @@ module github.com/AppliedGoCourses/mastergo/3_AdvancedDataTypes/3-5_TypeAliases/
 
 go 1.16
 
-require github.com/AppliedGoCourses/mastergo/3_AdvancedDataTypes/3-5_TypeAliases/oldlib v0.0.0-00010101000000-000000000000
+require github.com/AppliedGoCourses/mastergo/3_AdvancedDataTypes/3-5_TypeAliases/oldlib v0.1.0
 
 replace github.com/AppliedGoCourses/mastergo/3_AdvancedDataTypes/3-5_TypeAliases/oldlib => ./oldlib
+
+replace github.com/AppliedGoCourses/mastergo/3_AdvancedDataTypes/3-5_TypeAliases/newlib => ./newlib
