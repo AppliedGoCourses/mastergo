@@ -1,0 +1,3 @@
+[submodule "2_LanguageBasics/2-12-Modules/2-12-5_local_development/dice"]
+	path = 2_LanguageBasics/2-12-Modules/2-12-5_local_development/dice
+	url = https://github.com/appliedgocourses/dice
