@@ -15,12 +15,12 @@ type Doc struct {
 
 // ReadFile returns a wrapped error
 
-func WriteDoc(path string, doc Doc) error {
-	_, err := os.OpenFile(path, os.O_WRONLY|os.O_APPEND, 0660)
+func ReadFile(path string, doc Doc) error {
+	_, err := os.Open(path)
 	if err != nil {
-		return fmt.Errorf("Cannot write document '%s' (id %d): %w", doc.Title, doc.ID, err)
+		return fmt.Errorf("Cannot read '%s': %w", path, err)
 	}
-	// write data...
+	// read data...
 	return nil
 }
 
@@ -33,7 +33,7 @@ func main() {
 		Text:  "In the previous lecture, we learned about wrapping errors...",
 	}
 
-	err := WriteDoc("/path/to/no_file", doc)
+	err := ReadFile("/path/to/no_file", doc)
 	if err != nil {
 
 		// The error can be unwrapped once
