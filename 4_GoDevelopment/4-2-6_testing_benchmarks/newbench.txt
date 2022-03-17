@@ -1,0 +1,20 @@
+goos: darwin
+goarch: amd64
+pkg: benchmarks
+cpu: Intel(R) Core(TM) i5-7267U CPU @ 3.10GHz
+BenchmarkFacultyRecursive/5!-4         	82256109	        17.54 ns/op
+BenchmarkFacultyRecursive/10!-4        	38864790	        34.85 ns/op
+BenchmarkFacultyRecursive/20!-4        	17803327	        72.17 ns/op
+BenchmarkFacultyRecursive/50!-4        	 5815635	       218.2 ns/op
+BenchmarkFacultyRecursive/100!-4       	 2982081	       406.6 ns/op
+BenchmarkFacultyRecursive/500!-4       	  599836	      2569 ns/op
+BenchmarkFacultyRecursive/1000!-4      	  219470	      8924 ns/op
+BenchmarkFacultyLoop/5!-4              	176280876	         8.584 ns/op
+BenchmarkFacultyLoop/10!-4             	100000000	        14.11 ns/op
+BenchmarkFacultyLoop/20!-4             	89828312	        24.59 ns/op
+BenchmarkFacultyLoop/50!-4             	33091202	        36.51 ns/op
+BenchmarkFacultyLoop/100!-4            	16533831	        89.44 ns/op
+BenchmarkFacultyLoop/500!-4            	 3894333	       330.6 ns/op
+BenchmarkFacultyLoop/1000!-4           	 1645441	       753.8 ns/op
+PASS
+ok  	benchmarks	24.665s

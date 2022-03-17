@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	token "github.com/AppliedGoCourses/mastergo/4_GoDevelopment/4-2_testing/4-2-1_token"
+	token "github.com/AppliedGoCourses/mastergo/4_GoDevelopment/4-2-1_token"
 )
 
 func TestScan(t *testing.T) {
