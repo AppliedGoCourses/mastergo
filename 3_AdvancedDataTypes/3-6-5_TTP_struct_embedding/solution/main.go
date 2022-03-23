@@ -1,13 +1,14 @@
 package main
 
 import (
+	"math"
 	"time"
 )
 
 type CelestialBody struct {
 	Name           string
-	Mass           int64	// in 10^21 kg
-	Diameter       int64    // in km
+	Mass           int64 // in 10^21 kg
+	Diameter       int64 // in km
 	RotationPeriod time.Duration
 }
 
@@ -22,10 +23,10 @@ type Planet struct {
 
 type Star struct {
 	CelestialBody
-	Distance  float64  // in light years
-	Magnitude float64
-	Discovery int64	   // year
-	Planets   *Planet
+	Distance    float64 // in light years
+	Magnitude   float64
+	Discovery   int64 // year
+	FirstPlanet *Planet
 }
 
 var (
@@ -40,8 +41,6 @@ var (
 		HasAtmosphere:    false,
 		HasMagneticField: true,
 		Satellites:       []string{},
-		next:             &venus,
-		previous:         nil,
 	}
 
 	venus = Planet{
@@ -55,8 +54,6 @@ var (
 		HasAtmosphere:    true,
 		HasMagneticField: false,
 		Satellites:       []string{},
-		next:             &earth,
-		previous:         &mercury,
 	}
 
 	earth = Planet{
@@ -70,8 +67,6 @@ var (
 		HasAtmosphere:    true,
 		HasMagneticField: true,
 		Satellites:       []string{"Moon"},
-		next:             &mars,
-		previous:         &venus,
 	}
 
 	mars = Planet{
@@ -85,25 +80,32 @@ var (
 		HasAtmosphere:    true,
 		HasMagneticField: false,
 		Satellites:       []string{"Phobos", "Deimos"},
-		next:             nil,
-		previous:         &earth,
 	}
 
 	sun = Star{
 		CelestialBody: CelestialBody{
-			Name: "Sun",
-			Mass: 1988000000,
-			Diameter: 1391400,
+			Name:           "Sun",
+			Mass:           1988000000,
+			Diameter:       1391400,
 			RotationPeriod: 587,
 		},
-	Distance: 0,
-	Magnitude: 4.83,
-	Discovery: math.MinInt64,  // There is no MinInt, that's why Discovery is an int64
-	FirstPlanet: &mercury
-
+		Distance:    0,
+		Magnitude:   4.83,
+		Discovery:   math.MinInt64, // There is no MinInt, that's why Discovery is an int64
+		FirstPlanet: &mercury,
 	}
 )
 
 func main() {
+	// next and previous links have to be instantiated after declaring all variables,
+	// in order to avoid circular declarations
+
+	mercury.next = &venus
+	venus.next = &earth
+	earth.next = &mars
+
+	venus.previous = &mercury
+	earth.previous = &venus
+	mars.previous = &earth
 
 }
