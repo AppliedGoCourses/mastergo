@@ -44,7 +44,7 @@ func acronymWithLoop(s string) (acr string) {
 // turn all first letters of each word to uppercase and then just
 // check the letter's case in order to find the first letter in a word.
 
-func acronymWithMap(s string) (acr string) {
+func acronymWithMap(s string) string {
 	extractUpperCase := func(r rune) rune {
 		if unicode.IsLetter(r) && unicode.IsUpper(r) {
 			return r
@@ -52,7 +52,7 @@ func acronymWithMap(s string) (acr string) {
 		return -1
 	}
 
-	acr = strings.Map(extractUpperCase, strings.Title(s))
+	return strings.Map(extractUpperCase, strings.Title(s))
 }
 
 func main() {
