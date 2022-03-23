@@ -1,0 +1,3 @@
+# A word on go.mod and go.sum
+
+You surely have noticed that the custom package also comes with a go.mod file, like the main packages we used before. Also, the `go.mod` file in the `diceclient` directory contains two new directives, a `require` and a `replace` directive. Please ignore these for now, they are required to make the demo code work locally. You will learn about these directives in the lectures about Go Modules.
