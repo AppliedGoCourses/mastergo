@@ -11,7 +11,7 @@ func main() {
 
 	// Scan the card number.
 	str1 := "Card number: 1234 5678 0123 4567"
-	_, err := fmt.Sscanf(str1, "", ... )
+	_, err := fmt.Sscanf(str1, "", ...TODO... ) 
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -19,7 +19,7 @@ func main() {
 
 	// Scan the numeric values into a floating-point variable, and an integer.
 	str2 := "Brightness is 50.0% (hex #7ffff)"
-	_, err = fmt.Sscanf(str2, "", ... )
+	_, err = fmt.Sscanf(str2, "", ...TODO... )
 	if err != nil {
 		fmt.Println(err)
 	}

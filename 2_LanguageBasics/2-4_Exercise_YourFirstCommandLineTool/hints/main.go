@@ -25,7 +25,7 @@ func main() {
 	var from, to string
 	flag.StringVar(&from, "from", "", "The unit to convert from")
 	flag.StringVar( /* I bet you know what to add here */ )
-	flag.P...()  // never forget to add this call
+	flag.P...()  // never forget to add this call (do you remember the name?)
 
 	// Let's look how the arguments look like...
 
