@@ -7,8 +7,7 @@ require (
 	github.com/AppliedGoCourses/B v0.1.0
 )
 
-
-// You can un-comment these directices as you follow through the lecture. 
+// You can un-comment these directices as you follow through the lecture.
 
 // exclude github.com/AppliedGoCourses/C v1.2.0
 
