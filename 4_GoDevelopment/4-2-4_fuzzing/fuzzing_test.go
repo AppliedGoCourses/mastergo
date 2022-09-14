@@ -18,6 +18,7 @@ func FuzzScan(f *testing.F) {
 	for _, input := range seedInputs {
 		f.Add(input)
 	}
+
 	f.Fuzz(func(t *testing.T, data string) {
 		fields := Scan(data)
 		if !noWhitespaceLeft(fields) {
