@@ -53,7 +53,9 @@ func TestScan(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt // remember the spawn-goroutines-in-a-loop caveat
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			got, err := Scan(tt.args.s)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Scan() error = %v, wantErr %v", err, tt.wantErr)
