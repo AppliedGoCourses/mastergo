@@ -3,3 +3,4 @@
 OLD/*
 Master Go Code.code-workspace
 MasterGoCode.vim
+**/testdata/fuzz/
