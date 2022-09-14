@@ -53,14 +53,9 @@ func (s Stack[T]) Len() int {
 }
 
 func Combine[T any](s1, s2 Stack[T]) Stack[T] {
-	res := Stack[T]{}
-	for s1.Len() > 0 {
-		res.Push(s1.Pop())
-	}
-	for s2.Len() > 0 {
-		res.Push(s2.Pop())
-	}
-	return res
+	// The underlying type of Stack[T] is a slice of T,
+	// and so we can use slice operations on a Stack[T]
+	return append(s1, s2...)
 }
 
 func main() {
@@ -75,27 +70,27 @@ func main() {
 	fmt.Println()
 
 	// generic stack: string
-	stack1 := NewStack[string]()
-	stack1.Push("alpha")
-	stack1.Push("beta")
-	stack1.Push("gamma")
+	words := NewStack[string]()
+	words.Push("alpha")
+	words.Push("beta")
+	words.Push("gamma")
 
-	fmt.Println("generic string stack:", stack1)
+	fmt.Println("generic string stack:", words)
 
-	fmt.Println("Pop:  ", stack1.Pop())
-	fmt.Println("Generic string stack:", stack1)
+	fmt.Println("Pop:  ", words.Pop())
+	fmt.Println("Generic string stack:", words)
 	fmt.Println()
 
 	//generic stack: int
-	stack2 := Stack[int]{1, 2, 3, 4}
+	numbers := Stack[int]{1, 2, 3, 4}
 
-	fmt.Println("Generic int stack:", stack2)
+	fmt.Println("Generic int stack:", numbers)
 
-	top2 := stack2.Pop()
-	fmt.Println("Pop:  ", top2)
-	fmt.Println("Generic int stack:", stack2)
+	top := numbers.Pop()
+	fmt.Println("Pop:  ", top)
+	fmt.Println("Generic int stack:", numbers)
 
-	stack3 := Stack[int]{4, 5, 6}
-	fmt.Println("Combine:", Combine(stack2, stack3))
+	moreNumbers := Stack[int]{4, 5, 6}
+	fmt.Println("Combine:", Combine(numbers, moreNumbers))
 
 }
