@@ -76,6 +76,7 @@ func (t *SortedTree[T, U]) Upsert(key T, value U) *SortedTree[T, U] {
 
 func (t *SortedTree[T, U]) Find(key T) (U, error) {
 	if t == nil {
+		// To return the zero value of U, we need to instantiate a variable of type U
 		var zeroValue U
 		return zeroValue, fmt.Errorf("key %v not found", key)
 	}
@@ -121,7 +122,10 @@ func main() {
 
 	fmt.Println("Negate:", negate(42))
 
-	var tree *SortedTree[int, string]
+	tree := NewSortedTree[int, string]()
+	// or:
+	// var tree *SortedTree[int, string]
+	// We need a pointer here because Upsert and Find have pointer receivers!
 
 	tree = tree.Upsert(1, "one")
 	tree = tree.Upsert(2, "two")
