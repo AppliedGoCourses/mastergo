@@ -30,7 +30,7 @@ func TestApp_createQuote(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := app.createQuote(tt.json); (err != nil) != tt.wantErr {
-				t.Errorf("App.createQuote() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("App.createQuote() error = %v, wantErr %t", err, tt.wantErr)
 			}
 		})
 	}
@@ -70,7 +70,7 @@ func TestApp_getQuote(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := app.getQuote(tt.author)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("App.getQuote() error = %s, wantErr %s", err, tt.wantErr)
+				t.Errorf("App.getQuote() error = %s, wantErr %t", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
