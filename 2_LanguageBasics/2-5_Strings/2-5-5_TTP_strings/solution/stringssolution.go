@@ -34,6 +34,22 @@ func acronymWithLoop(s string) (acr string) {
 	return acr
 }
 
+// Optional task: optimize the loop
+//
+// Concatenating strings with + or += has some hidden cost. 
+// Strings are immutable. Concatenating two strings creates a new string,
+// and the original strings are subject to garbage collection. 
+// Hence concatenating strings in a loop may put some load on the garbage collector
+// if the loop is large enough.
+//
+// Your optional task: optimize the string concatenation.
+//
+// Have a look at the Builder type in package strings. The String Builder provides 
+// efficient string manipulation methods that minimize copying and heap allocations.
+// Re-write the loop to replace the += operator with String Builder methods.
+
+
+
 // Solution 2
 //
 // (Author: Adil Billa)
