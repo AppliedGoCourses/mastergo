@@ -93,6 +93,8 @@ func (app *App) processQuote(w http.ResponseWriter, r *http.Request) {
 func (app *App) listQuotes(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		w.WriteHeader(http.StatusBadRequest)
+		io.WriteString(w, "Bad Request: "+r.Method+" not allowed for "+r.URL.Path)
+		return
 	}
 	quotes, err := app.db.List() // replaced map with DB
 	if err != nil {

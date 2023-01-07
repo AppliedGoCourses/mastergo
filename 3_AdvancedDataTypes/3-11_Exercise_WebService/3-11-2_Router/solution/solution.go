@@ -41,6 +41,8 @@ func handleQuote(w http.ResponseWriter, r *http.Request) {
 func handleQuotesList(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		w.WriteHeader(http.StatusBadRequest)
+		io.WriteString(w, "Bad Request: "+r.Method+" not allowed for "+r.URL.Path)
+		return
 	}
 	io.WriteString(w, "List: "+r.URL.Path)
 }
