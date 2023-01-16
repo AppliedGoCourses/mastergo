@@ -1,3 +1,3 @@
-module github.com/AppliedGoCourses/mastergo/2_LanguageBasics/2-11_Packages/2-11-2_create_custom_packages/dice
+module github.com/appliedgocourses/doesnotexist/2-11-2/dice
 
 go 1.16
