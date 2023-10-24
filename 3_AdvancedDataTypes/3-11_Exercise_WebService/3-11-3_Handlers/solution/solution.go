@@ -128,15 +128,10 @@ func (app *App) handleQuote(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) getQuotesList() ([]byte, error) {
-	quotes := []Quote{}
-	// Get the entire list of quotes
-	for _, q := range app.storage {
-		quotes = append(quotes, *q)
-	}
-	// Turn the list into JSON.
+	// Turn app.storage into JSON.
 	// MarshalIndent returns ([]byte, error),
 	// which we can directly return to the caller.
-	return json.MarshalIndent(quotes, "", "  ")
+	return json.MarshalIndent(app.storage, "", "  ")
 }
 
 // handleQuotesList is the handler for the "get quotes" operation.
