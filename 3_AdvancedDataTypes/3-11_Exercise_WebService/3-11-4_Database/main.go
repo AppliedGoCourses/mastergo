@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -49,7 +48,7 @@ func (app *App) processQuote(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "POST":
 
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			io.WriteString(w, "Error: Cannot read request body. "+err.Error())

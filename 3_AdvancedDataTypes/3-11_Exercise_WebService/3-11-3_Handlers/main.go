@@ -70,7 +70,7 @@ func (app *App) handleQuote(w http.ResponseWriter, r *http.Request) {
 		// TODO:
 		// * Read the complete request body into a byte slice.
 		//   (The request body contains only a single quote in JSON format)
-		//   Hint: The package ioutil contains a convenience
+		//   Hint: Package io contains a convenience
 		//   function for reading everything until EOF.
 		// * Pass the byte slice to createQuote()
 		//
