@@ -14,8 +14,6 @@ use (
 	./2_LanguageBasics/2-12-Modules/2-12-2_creating_a_module/diceclient
 	./2_LanguageBasics/2-12-Modules/2-12-3_using_modules/diceclient
 	./2_LanguageBasics/2-12-Modules/2-12-4_adding_version_information/diceclient
-	./2_LanguageBasics/2-12-Modules/2-12-5_local_development/dice
-	./2_LanguageBasics/2-12-Modules/2-12-5_local_development/workspace/diceclient
 	./2_LanguageBasics/2-12-Modules/2-12-6_dependency_maintenance
 	./2_LanguageBasics/2-13_Exercise_BankAccount/bank
 	./2_LanguageBasics/2-13_Exercise_BankAccount/bank/solutionsteps
