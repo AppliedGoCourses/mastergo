@@ -77,7 +77,7 @@ func (d *DB) Get(author string) (*Quote, error) {
 		// Check and return any error that occurs.
 	})
 	// Check the error returned by d.db.View.
-	// Return (nil, err) or (&q, nil), respectively.
+	// Return (nil, err) or (q, nil), respectively.
 }
 
 // List lists all records in the DB.
