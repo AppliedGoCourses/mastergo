@@ -4,5 +4,6 @@ go 1.16
 
 require (
 	github.com/gosuri/uilive v0.0.4
-	github.com/mattn/go-isatty v0.0.13 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
+	golang.org/x/sys v0.24.0 // indirect
 )
