@@ -17,7 +17,7 @@ func BenchmarkFacultyRecursive(b *testing.B) {
 	}
 	for _, tt := range benchmarks {
 		b.Run(tt.name, func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
+			for b.Loop() {
 				FacultyRecursive(tt.num)
 			}
 		})
@@ -39,7 +39,7 @@ func BenchmarkFacultyLoop(b *testing.B) {
 	}
 	for _, tt := range benchmarks {
 		b.Run(tt.name, func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
+			for b.Loop() {
 				FacultyLoop(tt.num)
 			}
 		})
